@@ -229,17 +229,20 @@ if [ $1 = 1 ]; then
       %{_localstatedir}/ossec/packages_files/agent_installation_scripts/src/init/replace_manager_ip.sh %{_localstatedir}/ossec/etc/ossec.conf.rpmorig %{_localstatedir}/ossec/etc/ossec.conf
   fi
 
-  /sbin/chkconfig --add wazuh-agent
-  /sbin/chkconfig wazuh-agent on
+%check_service_var
+  if check_service ${ENABLE_WAZUH_SERVICE} ; then
+    /sbin/chkconfig --add wazuh-agent
+    /sbin/chkconfig wazuh-agent on
+  fi
 
   # If systemd is installed, add the wazuh-agent.service file to systemd files directory
-  if [ -d /run/systemd/system ]; then
-  
+  if command -v systemctl > /dev/null 2>&1 ; then
+
     # Fix for RHEL 8
     # Service must be installed in /usr/lib/systemd/system/
     if [ "${DIST_NAME}" == "rhel" -a "${DIST_VER}" == "8" ]; then
       install -m 644 %{_localstatedir}/ossec/packages_files/agent_installation_scripts/src/systemd/wazuh-agent.service /usr/lib/systemd/system/
-    else  
+    else
       install -m 644 %{_localstatedir}/ossec/packages_files/agent_installation_scripts/src/systemd/wazuh-agent.service /etc/systemd/system/
     fi
     # Fix for Fedora 28
@@ -250,8 +253,9 @@ if [ $1 = 1 ]; then
       fi
     fi
     systemctl daemon-reload
-    systemctl stop wazuh-agent
-    systemctl enable wazuh-agent > /dev/null 2>&1
+    if check_service ${ENABLE_WAZUH_SERVICE} ; then
+      systemctl enable wazuh-agent > /dev/null 2>&1
+    fi
   fi
 
   # Register and configure agent if Wazuh environment variables are defined
@@ -340,20 +344,21 @@ else
   fi
 fi
 
-if [ -s %{_localstatedir}/ossec/etc/client.keys ]; then
+if check_service ${ENABLE_WAZUH_SERVICE} ; then
+  if [ -s %{_localstatedir}/ossec/etc/client.keys ]; then
 
-  if cat %{_localstatedir}/ossec/etc/ossec.conf | grep -o -P '(?<=<server-ip>).*(?=</server-ip>)' | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' > /dev/null 2>&1; then
-    /sbin/service wazuh-agent restart > /dev/null 2>&1 || :
+    if cat %{_localstatedir}/ossec/etc/ossec.conf | grep -o -P '(?<=<server-ip>).*(?=</server-ip>)' | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' > /dev/null 2>&1; then
+      /sbin/service wazuh-agent restart > /dev/null 2>&1 || :
+    fi
+
+    if cat %{_localstatedir}/ossec/etc/ossec.conf | grep -o -P '(?<=<server-hostname>).*(?=</server-hostname>)' > /dev/null 2>&1; then
+      /sbin/service wazuh-agent restart > /dev/null 2>&1 || :
+    fi
+
+    if cat %{_localstatedir}/ossec/etc/ossec.conf | grep -o -P '(?<=<address>).*(?=</address>)' | grep -v 'MANAGER_IP' > /dev/null 2>&1; then
+      /sbin/service wazuh-agent restart > /dev/null 2>&1 || :
+    fi
   fi
-
-  if cat %{_localstatedir}/ossec/etc/ossec.conf | grep -o -P '(?<=<server-hostname>).*(?=</server-hostname>)' > /dev/null 2>&1; then
-    /sbin/service wazuh-agent restart > /dev/null 2>&1 || :
-  fi
-
-  if cat %{_localstatedir}/ossec/etc/ossec.conf | grep -o -P '(?<=<address>).*(?=</address>)' | grep -v 'MANAGER_IP' > /dev/null 2>&1; then
-    /sbin/service wazuh-agent restart > /dev/null 2>&1 || :
-  fi
-
 fi
 
 %preun
@@ -383,7 +388,7 @@ if [ $1 = 0 ]; then
     rm -f /etc/init.d/wazuh-agent
   fi
   # Remove the wazuh-agent.service file
-  # RHEL 8 service located in /usr/lib/systemd/system/ 
+  # RHEL 8 service located in /usr/lib/systemd/system/
   if [ -f /usr/lib/systemd/system/wazuh-agent.service ]; then
     rm -f /usr/lib/systemd/system/wazuh-agent.service
   else

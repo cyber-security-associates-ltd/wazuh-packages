@@ -297,11 +297,15 @@ if [ $1 = 1 ]; then
 
   # Add default local_files to ossec.conf
   %{_localstatedir}/ossec/packages_files/manager_installation_scripts/add_localfiles.sh %{_localstatedir}/ossec >> %{_localstatedir}/ossec/etc/ossec.conf
+
+%check_service_var
+  if check_service ${ENABLE_WAZUH_SERVICE} ; then
    /sbin/chkconfig --add wazuh-manager
    /sbin/chkconfig wazuh-manager on
+  fi
 
   # If systemd is installed, add the wazuh-manager.service file to systemd files directory
-  if [ -d /run/systemd/system ]; then
+  if command -v systemctl > /dev/null 2>&1 ; then
 
     # Fix for RHEL 8
     # Service must be installed in /usr/lib/systemd/system/
@@ -319,8 +323,9 @@ if [ $1 = 1 ]; then
       fi
     fi
     systemctl daemon-reload
-    systemctl stop wazuh-manager
-    systemctl enable wazuh-manager > /dev/null 2>&1
+    if check_service ${ENABLE_WAZUH_SERVICE} ; then
+      systemctl enable wazuh-manager > /dev/null 2>&1
+    fi
   fi
 
 fi
@@ -390,7 +395,9 @@ rm -rf %{_localstatedir}/ossec/packages_files
 rm -f %{_localstatedir}/ossec/etc/shared/default/*.rpmnew
 
 if %{_localstatedir}/ossec/bin/ossec-logtest 2>/dev/null ; then
-  /sbin/service wazuh-manager restart > /dev/null 2>&1
+  if check_service ${ENABLE_WAZUH_SERVICE} ; then
+    /sbin/service wazuh-manager restart > /dev/null 2>&1
+  fi
 else
   echo "================================================================================================================"
   echo "Something in your actual rules configuration is wrong, please review your configuration and restart the service."

@@ -1,0 +1,9 @@
+%check_service_var \
+check_service() { \
+  service_var=$(echo "$1" | tr '[:upper:]' '[:lower:]') \
+  if [ -z "${service_var}" ] || [ "X${service_var}" = "Xyes" ] || [ "X${service_var}" = "Xy" ]; then \
+    return 0 \
+  else \
+    return 1 \
+  fi \
+}

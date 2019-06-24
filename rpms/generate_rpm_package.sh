@@ -38,7 +38,7 @@ clean() {
     exit_code=$1
 
     # Clean the files
-    rm -rf ${DOCKERFILE_PATH}/{*.tar.gz,wazuh*} ${DOCKERFILE_PATH}/build.sh ${SOURCES_DIRECTORY}
+    rm -rf ${DOCKERFILE_PATH}/{*.tar.gz,wazuh*} ${DOCKERFILE_PATH}/build.sh ${DOCKERFILE_PATH}/rpmmacros ${SOURCES_DIRECTORY}
 
     exit ${exit_code}
 }
@@ -53,7 +53,7 @@ build_rpm() {
     git clone ${SOURCE_REPOSITORY} -b $BRANCH ${SOURCES_DIRECTORY} --depth=1 --single-branch -q
 
     # Copy the necessary files
-    cp build.sh ${DOCKERFILE_PATH}
+    cp rpmmacros build.sh ${DOCKERFILE_PATH}
 
     if [[ "${TARGET}" != "api" ]]; then
         VERSION="$(cat ${SOURCES_DIRECTORY}/src/VERSION | cut -d 'v' -f 2)"

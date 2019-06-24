@@ -17,6 +17,8 @@ RUN chmod +x /usr/local/bin/build_package
 # Create the build directory
 RUN mkdir /build_wazuh
 ADD wazuh.spec /build_wazuh/wazuh.spec
+ADD rpmmacros /etc/rpm/macros
+RUN chmod +xr /usr/local/bin/build_package
 
 # Add the volumes
 VOLUME /var/local/wazuh

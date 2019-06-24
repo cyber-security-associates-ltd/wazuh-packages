@@ -16,6 +16,8 @@ RUN yum install -y nodejs
 # Add the scripts to build the RPM package
 ADD build.sh /usr/local/bin/build_package
 RUN chmod +x /usr/local/bin/build_package
+ADD rpmmacros /etc/rpm/macros
+RUN chmod +xr /usr/local/bin/build_package
 
 # Create the build directory
 RUN mkdir /build_wazuh
