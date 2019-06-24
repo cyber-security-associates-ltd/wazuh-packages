@@ -1,6 +1,16 @@
 #!/bin/sh
 # postinst script for Wazuh
 # Wazuh, Inc 2016
+
+check_service() { \
+  service_var=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+  if [ -z "${service_var}" ] || [ "X${service_var}" = "Xyes" ] || [ "X${service_var}" = "Xy" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 set -e
 case "$1" in
     configure)
@@ -278,15 +288,21 @@ case "$1" in
 
     # Service
     if [ -x /etc/init.d/wazuh-manager ]; then
-        if [ -d /run/systemd/system ]; then
+        if command -v systemctl > /dev/null 2>&1 ; then
             systemctl daemon-reload
-            systemctl enable wazuh-manager > /dev/null 2>&1
+            if check_service ${ENABLE_WAZUH_SERVICE} ; then
+                systemctl enable wazuh-manager > /dev/null 2>&1
+            fi
         fi
 
-        update-rc.d wazuh-manager defaults > /dev/null 2>&1
+        if check_service ${ENABLE_WAZUH_SERVICE} ; then
+            update-rc.d wazuh-manager defaults > /dev/null 2>&1
+        fi
 
         if ${DIR}/bin/ossec-logtest -t 2>/dev/null ; then
-            service wazuh-manager restart
+            if check_service ${ENABLE_WAZUH_SERVICE} ; then
+                service wazuh-manager restart
+            fi
         else
             echo "================================================================================================================"
             echo "Something in your actual rules configuration is wrong, please review your configuration and restart the service."

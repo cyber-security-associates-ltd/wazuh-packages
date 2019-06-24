@@ -2,6 +2,15 @@
 # postinst script for wazuh-agent
 # Wazuh, Inc 2016
 
+check_service() { \
+  service_var=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+  if [ -z "${service_var}" ] || [ "X${service_var}" = "Xyes" ] || [ "X${service_var}" = "Xy" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 set -e
 
 case "$1" in
@@ -140,10 +149,12 @@ case "$1" in
 
     # Service
     if [ -f /etc/init.d/wazuh-agent ]; then
-        if [ -d /run/systemd/system ]; then
-          systemctl enable wazuh-agent > /dev/null 2>&1
+        if check_service ${ENABLE_WAZUH_SERVICE} ; then
+            if command -v systemctl > /dev/null 2>&1 ; then
+                systemctl enable wazuh-agent > /dev/null 2>&1
+            fi
+            update-rc.d wazuh-agent defaults > /dev/null 2>&1
         fi
-        update-rc.d wazuh-agent defaults > /dev/null 2>&1
     fi
 
     # Register and configure agent if Wazuh environment variables are defined
@@ -165,16 +176,17 @@ case "$1" in
     if [ -z "$(ls -A ${WAZUH_GLOBAL_TMP_DIR})" ]; then
         rm -rf ${WAZUH_GLOBAL_TMP_DIR}
     fi
-
-    if [ -s ${DIR}/etc/client.keys ]; then
-        if cat ${DIR}/etc/ossec.conf | grep -o -P '(?<=<server-ip>).*(?=</server-ip>)' | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' > /dev/null 2>&1; then
-        service wazuh-agent restart || :
-        fi
-        if cat ${DIR}/etc/ossec.conf | grep -o -P '(?<=<server-hostname>).*(?=</server-hostname>)' > /dev/null 2>&1; then
-        service wazuh-agent restart || :
-        fi
-        if cat ${DIR}/etc/ossec.conf | grep -o -P '(?<=<address>)(?!MANAGER_IP).*(?=</address>)' > /dev/null 2>&1; then
-        service wazuh-agent restart || :
+    if check_service ${ENABLE_WAZUH_SERVICE} ; then
+        if [ -s ${DIR}/etc/client.keys ]; then
+            if cat ${DIR}/etc/ossec.conf | grep -o -P '(?<=<server-ip>).*(?=</server-ip>)' | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' > /dev/null 2>&1; then
+            service wazuh-agent restart || :
+            fi
+            if cat ${DIR}/etc/ossec.conf | grep -o -P '(?<=<server-hostname>).*(?=</server-hostname>)' > /dev/null 2>&1; then
+            service wazuh-agent restart || :
+            fi
+            if cat ${DIR}/etc/ossec.conf | grep -o -P '(?<=<address>)(?!MANAGER_IP).*(?=</address>)' > /dev/null 2>&1; then
+            service wazuh-agent restart || :
+            fi
         fi
     fi
     # Fix /etc/ossec-init.conf
