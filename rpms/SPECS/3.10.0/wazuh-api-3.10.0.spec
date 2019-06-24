@@ -93,7 +93,7 @@ fi
 %post
 
 # Install daemon. It will load new daemon (SysV and Systemctl) and start the service.
-%{_localstatedir}/ossec/api/scripts/install_daemon.sh > /dev/null
+%{_localstatedir}/ossec/api/scripts/install_daemon.sh ${ENABLE_WAZUH_SERVICE} > /dev/null
 
 API_PATH="${RPM_BUILD_ROOT}%{_localstatedir}/ossec/api"
 API_PATH_BACKUP="${RPM_BUILD_ROOT}%{_localstatedir}/ossec/~api"
