@@ -204,7 +204,7 @@ if [ $1 = 2 ]; then
     fi
 fi
 %post
-
+%check_service_var
 # If the package is being installed
 if [ $1 = 1 ]; then
   . %{_localstatedir}/ossec/packages_files/manager_installation_scripts/src/init/dist-detect.sh
@@ -298,7 +298,6 @@ if [ $1 = 1 ]; then
   # Add default local_files to ossec.conf
   %{_localstatedir}/ossec/packages_files/manager_installation_scripts/add_localfiles.sh %{_localstatedir}/ossec >> %{_localstatedir}/ossec/etc/ossec.conf
 
-%check_service_var
   if check_service ${ENABLE_WAZUH_SERVICE} ; then
    /sbin/chkconfig --add wazuh-manager
    /sbin/chkconfig wazuh-manager on

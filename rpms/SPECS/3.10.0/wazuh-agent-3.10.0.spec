@@ -192,6 +192,7 @@ if [ $1 = 2 ]; then
 fi
 
 %post
+%check_service_var
 # If the package is being installed
 if [ $1 = 1 ]; then
   . %{_localstatedir}/ossec/packages_files/agent_installation_scripts/src/init/dist-detect.sh
@@ -229,7 +230,6 @@ if [ $1 = 1 ]; then
       %{_localstatedir}/ossec/packages_files/agent_installation_scripts/src/init/replace_manager_ip.sh %{_localstatedir}/ossec/etc/ossec.conf.rpmorig %{_localstatedir}/ossec/etc/ossec.conf
   fi
 
-%check_service_var
   if check_service ${ENABLE_WAZUH_SERVICE} ; then
     /sbin/chkconfig --add wazuh-agent
     /sbin/chkconfig wazuh-agent on
