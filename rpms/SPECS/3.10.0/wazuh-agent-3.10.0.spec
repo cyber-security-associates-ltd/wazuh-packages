@@ -230,14 +230,8 @@ if [ $1 = 1 ]; then
       %{_localstatedir}/ossec/packages_files/agent_installation_scripts/src/init/replace_manager_ip.sh %{_localstatedir}/ossec/etc/ossec.conf.rpmorig %{_localstatedir}/ossec/etc/ossec.conf
   fi
 
-  if check_service ${ENABLE_WAZUH_SERVICE} ; then
-    /sbin/chkconfig --add wazuh-agent
-    /sbin/chkconfig wazuh-agent on
-  fi
-
   # If systemd is installed, add the wazuh-agent.service file to systemd files directory
   if command -v systemctl > /dev/null 2>&1 ; then
-
     # Fix for RHEL 8
     # Service must be installed in /usr/lib/systemd/system/
     if [ "${DIST_NAME}" == "rhel" -a "${DIST_VER}" == "8" ]; then
@@ -253,9 +247,6 @@ if [ $1 = 1 ]; then
       fi
     fi
     systemctl daemon-reload
-    if check_service ${ENABLE_WAZUH_SERVICE} ; then
-      systemctl enable wazuh-agent > /dev/null 2>&1
-    fi
   fi
 
   # Register and configure agent if Wazuh environment variables are defined
@@ -263,8 +254,15 @@ if [ $1 = 1 ]; then
 
 fi
 
-if [ ! -d /run/systemd/system ]; then
-  update-rc.d wazuh-agent defaults > /dev/null 2>&1
+if check_service ${ENABLE_WAZUH_SERVICE} ; then
+
+  /sbin/chkconfig --add wazuh-agent > /dev/null 2>&1
+  /sbin/chkconfig wazuh-agent on > /dev/null 2>&1
+
+  if command -v systemctl > /dev/null 2>&1 ; then
+    systemctl enable wazuh-agent > /dev/null 2>&1
+  fi
+
 fi
 
 # Delete the installation files used to configure the agent
