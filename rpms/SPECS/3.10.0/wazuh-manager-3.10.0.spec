@@ -206,6 +206,7 @@ fi
 %post
 %check_service_var
 # If the package is being installed
+upgrade="no"
 if [ $1 = 1 ]; then
   . %{_localstatedir}/ossec/packages_files/manager_installation_scripts/src/init/dist-detect.sh
 
@@ -319,6 +320,8 @@ if [ $1 = 1 ]; then
     systemctl daemon-reload
   fi
 
+else
+  upgrade="yes"
 fi
 
 if check_service ${ENABLE_WAZUH_SERVICE} ; then

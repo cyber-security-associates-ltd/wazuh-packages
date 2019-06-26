@@ -193,6 +193,7 @@ fi
 
 %post
 %check_service_var
+upgrade="no"
 # If the package is being installed
 if [ $1 = 1 ]; then
   . %{_localstatedir}/ossec/packages_files/agent_installation_scripts/src/init/dist-detect.sh
@@ -252,6 +253,8 @@ if [ $1 = 1 ]; then
   # Register and configure agent if Wazuh environment variables are defined
   %{_localstatedir}/ossec/packages_files/agent_installation_scripts/src/init/register_configure_agent.sh > /dev/null || :
 
+else
+  upgrade="yes"
 fi
 
 if check_service ${ENABLE_WAZUH_SERVICE} ; then
