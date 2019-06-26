@@ -2,9 +2,38 @@
 # postinst script for wazuh-agent
 # Wazuh, Inc 2016
 
-check_service() { \
+check_service() {
   service_var=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-  if [ -z "${service_var}" ] || [ "X${service_var}" = "Xyes" ] || [ "X${service_var}" = "Xy" ]; then
+  upgrade_from="$2"
+  if [ -z "${service_var}" ]; then
+    if [ -z ${upgrade_from} ]; then
+        return 0
+    elif command -v systemctl > /dev/null 2>&1 ; then
+      if systemctl is-enabled wazuh-manager > /dev/null 2>&1 ; then
+        return 0
+      else
+        return 1
+      fi
+    elif command -v chkconfig > /dev/null 2>&1 ; then
+      if chkconfig --list wazuh-manager | grep on > /dev/null 2>&1 ; then
+        return 0
+      else
+        return 1
+      fi
+    elif command -v update-rc.d > /dev/null 2>&1 ; then
+      if ls /etc/rc*.d | grep wazuh-manager > /dev/null 2>&1 ; then
+        return 0
+      else
+        return 1
+      fi
+    elif command -v rc-update > /dev/null 2>&1 ; then
+      if ls /etc/rc*.d | grep wazuh-manager > /dev/null 2>&1 ; then
+        return 0
+      else
+        return 1
+      fi
+    fi
+  elif [ "X${service_var}" = "Xyes" ] || [ "X${service_var}" = "Xy" ]; then
     return 0
   else
     return 1
@@ -149,7 +178,7 @@ case "$1" in
 
     # Service
     if [ -f /etc/init.d/wazuh-agent ]; then
-        if check_service ${ENABLE_WAZUH_SERVICE} ; then
+        if check_service ${ENABLE_WAZUH_SERVICE} $2 ; then
             if command -v systemctl > /dev/null 2>&1 ; then
                 systemctl enable wazuh-agent > /dev/null 2>&1
             fi
@@ -176,7 +205,7 @@ case "$1" in
     if [ -z "$(ls -A ${WAZUH_GLOBAL_TMP_DIR})" ]; then
         rm -rf ${WAZUH_GLOBAL_TMP_DIR}
     fi
-    if check_service ${ENABLE_WAZUH_SERVICE} ; then
+    if check_service ${ENABLE_WAZUH_SERVICE} $2 ; then
         if [ -s ${DIR}/etc/client.keys ]; then
             if cat ${DIR}/etc/ossec.conf | grep -o -P '(?<=<server-ip>).*(?=</server-ip>)' | grep -E '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' > /dev/null 2>&1; then
             service wazuh-agent restart || :
