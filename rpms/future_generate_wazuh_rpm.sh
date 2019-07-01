@@ -7,6 +7,7 @@ OUTDIR="${HOME}/futures/yum/"
 BRANCH="master"
 RELEASE="1"
 TARGET=""
+DEBUG="no"
 TARGET_VERSION=""
 JOBS="4"
 RPM_X86_BUILDER="rpm_builder_x86"
@@ -34,11 +35,11 @@ build_rpm() {
     DOCKERFILE_PATH="$2"
     VERSION="$3"
 
-    SOURCES_DIRECTORY="/tmp/wazuh-builder/sources-$(( ( RANDOM % 1000000 )  + 1 ))" 
+    SOURCES_DIRECTORY="/tmp/wazuh-builder/sources-$(( ( RANDOM % 1000000 )  + 1 ))"
 
     # Download the sources
     git clone ${SOURCE_REPOSITORY} -b $BRANCH ${SOURCES_DIRECTORY} --depth=1 --single-branch
-    
+
     # Copy the necessary files
     cp build.sh ${DOCKERFILE_PATH}
 
@@ -56,7 +57,7 @@ build_rpm() {
       echo "Current version -> $CURRENT_VERSION"
       echo "Short current version -> $SHORT_CURRENT_VERSION"
       echo "Target version -> $VERSION"
-      
+
       cp -rp SPECS/$CURRENT_VERSION SPECS/$VERSION
       mv SPECS/$VERSION/wazuh-manager-$CURRENT_VERSION.spec SPECS/$VERSION/wazuh-manager-$VERSION.spec
       mv SPECS/$VERSION/wazuh-agent-$CURRENT_VERSION.spec SPECS/$VERSION/wazuh-agent-$VERSION.spec
@@ -72,7 +73,7 @@ build_rpm() {
 
       sed -i "s|${CURRENT_VERSION}|${VERSION}|" SPECS/$VERSION/wazuh-api-$VERSION.spec
     fi
-    
+
     cp SPECS/$VERSION/wazuh-$TARGET-$VERSION.spec ${DOCKERFILE_PATH}/wazuh.spec
 
     # Build the Docker image
@@ -82,7 +83,7 @@ build_rpm() {
     docker run -t --rm -v $OUTDIR:/var/local/wazuh \
         -v ${SOURCES_DIRECTORY}:/build_wazuh/wazuh-$TARGET-$VERSION \
         ${CONTAINER_NAME} $TARGET $VERSION $ARCHITECTURE \
-        $JOBS $RELEASE ${INSTALLATION_PATH} || exit 1
+        $JOBS $RELEASE ${INSTALLATION_PATH} ${DEBUG} || exit 1
 
     # Clean the files
     rm -rf ${DOCKERFILE_PATH}/{*.sh,*.spec} ${SOURCES_DIRECTORY}
@@ -210,6 +211,10 @@ main() {
             else
                 help 1
             fi
+            ;;
+        "-d"|"--debug")
+            DEBUG="yes"
+            shift 1
             ;;
         "-p"|"--path")
             if [ -n "$2" ]
