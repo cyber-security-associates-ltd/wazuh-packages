@@ -32,6 +32,7 @@ log analysis, file integrity monitoring, intrusions detection and policy and com
 ./gen_ossec.sh conf manager centos %rhel %{_localstatedir}/ossec > etc/ossec-server.conf
 ./gen_ossec.sh init manager %{_localstatedir}/ossec > ossec-init.conf
 
+%build
 pushd src
 # Rebuild for server
 make clean
@@ -114,6 +115,9 @@ cp src/REVISION ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_
 cp src/LOCATION ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/src/
 cp -r src/systemd/* ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/src/systemd
 
+if [ %{_debugenabled} == "yes" ]; then
+  %{_rpmconfigdir}/find-debuginfo.sh
+fi
 exit 0
 %pre
 
@@ -670,7 +674,7 @@ rm -fr %{buildroot}
 %attr(640, root, ossec) %{_localstatedir}/ossec/ruleset/decoders/*
 %dir %attr(750, root, ossec) %{_localstatedir}/ossec/ruleset/rules
 %attr(640, root, ossec) %{_localstatedir}/ossec/ruleset/rules/*
-%dir %attr(700, root, ossec) %{_localstatedir}/ossec/.ssh
+%dir %attr(750, root, ossec) %{_localstatedir}/ossec/.ssh
 %dir %attr(750, ossec, ossec) %{_localstatedir}/ossec/stats
 %dir %attr(1770, root, ossec) %{_localstatedir}/ossec/tmp
 %dir %attr(750, root, ossec) %{_localstatedir}/ossec/var
