@@ -148,6 +148,7 @@ create_package() {
     pkgmogrify -DARCH=`uname -p` wazuh-agent.p5m.1 wazuh-agent.mog | pkgfmt > wazuh-agent.p5m.2
     pkgdepend generate -md /var/ossec -d /etc/init.d -d /etc/rc2.d -d /etc/rc3.d wazuh-agent.p5m.2 > wazuh-agent.p5m.3
     pkgdepend resolve -m wazuh-agent.p5m.3
+    sed 's|require|optional|g' wazuh-agent.p5m.3 > wazuh-agent.p5m.3.tmp && mv wazuh-agent.p5m.3.tmp wazuh-agent.p5m.3
     pkgsend -s http://localhost:9001 publish -d /var/ossec -d /etc/init.d -d /etc/rc2.d -d /etc/rc3.d wazuh-agent.p5m.3.res > pack
     package=`cat pack | grep wazuh | cut -c 13-` # This extracts the name of the package generated in the previous step
     rm -f *.p5p
