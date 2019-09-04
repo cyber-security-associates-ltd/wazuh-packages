@@ -437,6 +437,9 @@ if [ $1 = 0 ]; then
     rm -f /etc/systemd/system/wazuh-agent.service
   fi
 
+  # Remove SCA files
+  rm -f %{_localstatedir}/ossec/ruleset/sca/*
+
 fi
 
 %triggerin -- glibc
@@ -466,7 +469,8 @@ if [ $1 == 0 ];then
   rm -rf %{_localstatedir}/ossec/bin/
   rm -rf %{_localstatedir}/ossec/logs/
   rm -rf %{_localstatedir}/ossec/backup/
-  rm -rf %{_localstatedir}/ossec/ruleset/sca/
+  rm -rf %{_localstatedir}/ossec/ruleset/
+  rm -rf %{_localstatedir}/ossec/tmp
 fi
 
 # If the package is been downgraded
@@ -644,9 +648,19 @@ rm -fr %{buildroot}
 
 
 %changelog
-* Thu Aug 1 2019 support <info@wazuh.com> - 3.11.0
+* Thu Aug 29 2019 support <info@wazuh.com> - 3.11.0
 - More info: https://documentation.wazuh.com/current/release-notes/
-* Mon May 6 2019 support <info@wazuh.com> - 3.10.0
+* Mon Aug 26 2019 support <support@wazuh.com> - 3.10.0
+- More info: https://documentation.wazuh.com/current/release-notes/
+* Thu Aug 8 2019 support <info@wazuh.com> - 3.9.5
+- More info: https://documentation.wazuh.com/current/release-notes/
+* Tue Jul 12 2019 support <info@wazuh.com> - 3.9.4
+- More info: https://documentation.wazuh.com/current/release-notes/
+* Tue Jun 11 2019 support <info@wazuh.com> - 3.9.3
+- More info: https://documentation.wazuh.com/current/release-notes/
+* Mon Jun 6 2019 support <info@wazuh.com> - 3.9.2
+- More info: https://documentation.wazuh.com/current/release-notes/
+* Mon May 6 2019 support <info@wazuh.com> - 3.9.1
 - More info: https://documentation.wazuh.com/current/release-notes/
 * Mon Feb 25 2019 support <info@wazuh.com> - 3.9.0
 - More info: https://documentation.wazuh.com/current/release-notes/
