@@ -121,15 +121,15 @@ installation(){
     arch="$(uname -p)"
     # Build the binaries
     if [ "$arch" = "sparc" ]; then
-        gmake -j $THREADS TARGET=agent PREFIX=${install_path} USE_SELINUX=no USE_BIG_ENDIAN=yes DISABLE_SHARED=yes
+        gmake -j $THREADS TARGET=agent PREFIX=${install_path} USE_SELINUX=no USE_BIG_ENDIAN=yes DISABLE_SHARED=yes || exit 1
     else
-        gmake -j $THREADS TARGET=agent PREFIX=${install_path} USE_SELINUX=no DISABLE_SHARED=yes
+        gmake -j $THREADS TARGET=agent PREFIX=${install_path} USE_SELINUX=no DISABLE_SHARED=yes || exit 1
     fi
 
     cd $SOURCE
     ${CURRENT_PATH}/solaris10_patch.sh
     config
-    /bin/bash $SOURCE/install.sh
+    /bin/bash $SOURCE/install.sh || exit 1
     cd ${CURRENT_PATH}
 }
 
@@ -189,18 +189,15 @@ clean(){
     cd ${CURRENT_PATH}
     rm -rf ${SOURCE}
     rm -rf wazuh-agent wazuh *.list *proto
-    rm -f /etc/ossec-init.conf
-    rm *.new
+    rm -f *.new
 
     ## Stop and remove application
     ${install_path}/bin/ossec-control stop
     rm -r ${install_path}*
-    rm /etc/ossec-init.conf
-
-    # remove launchdaemons
-    rm -f /etc/init.d/wazuh-agent
     rm -f /etc/ossec-init.conf
 
+     # remove launchdaemons
+    rm -f /etc/init.d/wazuh-agent
     rm -f /etc/rc2.d/S97wazuh-agent
     rm -f /etc/rc3.d/S97wazuh-agent
 
