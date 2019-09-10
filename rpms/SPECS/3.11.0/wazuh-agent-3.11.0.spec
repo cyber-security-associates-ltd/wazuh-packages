@@ -294,9 +294,6 @@ if [ ! -d /run/systemd/system ]; then
   update-rc.d wazuh-agent defaults > /dev/null 2>&1
 fi
 
-# Delete the installation files used to configure the agent
-rm -rf %{_localstatedir}/ossec/packages_files
-
 # Remove unnecessary files from shared directory
 rm -f %{_localstatedir}/ossec/etc/shared/*.rpmnew
 
@@ -355,7 +352,6 @@ SCA_BASE_DIR="%{_localstatedir}/ossec/packages_files/agent_installation_scripts/
 mkdir -p %{_localstatedir}/ossec/ruleset/sca
 
 SCA_TMP_DIR="${SCA_BASE_DIR}/${SCA_DIR}"
-
 # Install the configuration files needed for this hosts
 if [ -r "${SCA_BASE_DIR}/${DIST_NAME}/${DIST_VER}/${DIST_SUBVER}/sca.files" ]; then
   SCA_TMP_DIR="${SCA_BASE_DIR}/${DIST_NAME}/${DIST_VER}/${DIST_SUBVER}"
@@ -397,6 +393,9 @@ fi
 
 # Restore ossec.conf permissions after upgrading
 chmod 0660 %{_localstatedir}/ossec/etc/ossec.conf
+
+# Delete the installation files used to configure the agent
+rm -rf %{_localstatedir}/ossec/packages_files
 
 if [ -s %{_localstatedir}/ossec/etc/client.keys ]; then
 
