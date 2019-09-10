@@ -102,51 +102,51 @@ mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_install
 mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/etc/templates/config/rhel
 
 # Install configuration assesment files and files templates
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/{applications,generic}
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/amzn/{1,2}
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos/{7,6,5}
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/{15,16,17,18}
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian/{7,8,9}
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/{12,14,16}/04
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel/{7,6,5}
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sles/{11,12}
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/suse/{11,12}
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sunos
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/windows
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/{applications,generic}
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/amzn/{1,2}
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos/{7,6,5}
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/{15,16,17,18}
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian/{7,8,9}
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/{12,14,16}/04
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel/{7,6,5}
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sles/{11,12}
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/suse/{11,12}
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sunos
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/windows
 
-cp -r etc/sca/{applications,generic,darwin,debian,rhel,sles,sunos,windows} ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp
+cp -r etc/sca/{applications,generic,darwin,debian,rhel,sles,sunos,windows} ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp
 
-cp etc/templates/config/generic/{sca.files,sca.manager.files} ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/generic
+cp etc/templates/config/generic/{sca.files,sca.manager.files} ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/generic
 
-cp etc/templates/config/amzn/1/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/amzn/1
-cp etc/templates/config/amzn/2/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/amzn/2
+cp etc/templates/config/amzn/1/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/amzn/1
+cp etc/templates/config/amzn/2/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/amzn/2
 
-cp etc/templates/config/centos/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos
-cp etc/templates/config/centos/6/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos/6
-cp etc/templates/config/centos/5/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos/5
+cp etc/templates/config/centos/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos
+cp etc/templates/config/centos/6/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos/6
+cp etc/templates/config/centos/5/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos/5
 
-cp etc/templates/config/darwin/15/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/15
-cp etc/templates/config/darwin/16/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/16
-cp etc/templates/config/darwin/17/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/17
-cp etc/templates/config/darwin/18/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/18
+cp etc/templates/config/darwin/15/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/15
+cp etc/templates/config/darwin/16/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/16
+cp etc/templates/config/darwin/17/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/17
+cp etc/templates/config/darwin/18/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/18
 
-cp etc/templates/config/rhel/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel
-cp etc/templates/config/rhel/6/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel/6
-cp etc/templates/config/rhel/5/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel/5
+cp etc/templates/config/rhel/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel
+cp etc/templates/config/rhel/6/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel/6
+cp etc/templates/config/rhel/5/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel/5
 
-cp etc/templates/config/sles/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sles
-cp etc/templates/config/sles/11/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sles/11
+cp etc/templates/config/sles/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sles
+cp etc/templates/config/sles/11/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sles/11
 
-cp etc/templates/config/suse/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/suse
-cp etc/templates/config/suse/11/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/suse/11
+cp etc/templates/config/suse/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/suse
+cp etc/templates/config/suse/11/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/suse/11
 
-cp etc/templates/config/ubuntu/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu
-cp etc/templates/config/ubuntu/12/04/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/12/04
-cp etc/templates/config/ubuntu/14/04/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/14/04
+cp etc/templates/config/ubuntu/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu
+cp etc/templates/config/ubuntu/12/04/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/12/04
+cp etc/templates/config/ubuntu/14/04/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/14/04
 
-cp etc/templates/config/debian/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian
-cp etc/templates/config/debian/7/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian/7
-cp etc/templates/config/debian/8/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian/8
+cp etc/templates/config/debian/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian
+cp etc/templates/config/debian/7/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian/7
+cp etc/templates/config/debian/8/sca.files ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian/8
 
 # Add SUSE initscript
 cp -rp src/init/ossec-hids-suse.init ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/packages_files/manager_installation_scripts/src/init/
@@ -461,7 +461,7 @@ else
 fi
 
 SCA_DIR="${DIST_NAME}/${DIST_VER}"
-SCA_BASE_DIR="%{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp"
+SCA_BASE_DIR="%{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp"
 mkdir -p %{_localstatedir}/ossec/ruleset/sca
 
 SCA_TMP_DIR="${SCA_BASE_DIR}/${SCA_DIR}"
@@ -797,6 +797,71 @@ rm -fr %{buildroot}
 %attr(750, root, root) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/etc/templates/config/fedora/*
 %dir %attr(750, root, root) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/etc/templates/config/rhel
 %attr(750, root, root) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/etc/templates/config/rhel/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/applications
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/applications/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/generic
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/generic/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/amzn
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/amzn/1
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/amzn/1/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/amzn/2
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/amzn/2/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos/sca.files
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos/5
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos/5/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos/6
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos/6/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/centos/7
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/15
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/15/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/16
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/16/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/17
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/17/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/18
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/darwin/18/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian/sca.files
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian/*yml
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian/7
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian/7/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian/8
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian/8/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/debian/9
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel/sca.files
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel/5
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel/5/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel/6
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel/6/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel/7
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/rhel/7/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sles
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sles/sca.files
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sles/11
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sles/11/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sles/12
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sles/12/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sunos
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/sunos/*
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/suse/sca.files
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/suse/11
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/suse/11/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/suse/12
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/sca.files
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/12
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/12/04
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/12/04/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/14
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/14/04
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/14/04/*
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/16
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/ubuntu/16/04
+%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/windows
+%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/packages_files/manager_installation_scripts/sca-%{version}-%{release}-tmp/windows/*
 %dir %attr(750, root, ossec) %{_localstatedir}/ossec/queue
 %attr(600, root, ossec) %ghost %{_localstatedir}/ossec/queue/agents-timestamp
 %dir %attr(770, ossecr, ossec) %{_localstatedir}/ossec/queue/agent-info
@@ -821,71 +886,6 @@ rm -fr %{buildroot}
 %dir %attr(770, root, ossec) %{_localstatedir}/ossec/.ssh
 %dir %attr(750, ossec, ossec) %{_localstatedir}/ossec/stats
 %dir %attr(1770, root, ossec) %{_localstatedir}/ossec/tmp
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/applications
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/applications/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/generic
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/generic/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/amzn
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/amzn/1
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/amzn/1/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/amzn/2
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/amzn/2/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos/sca.files
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos/5
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos/5/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos/6
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos/6/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/centos/7
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/15
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/15/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/16
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/16/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/17
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/17/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/18
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/darwin/18/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian/sca.files
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian/*yml
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian/7
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian/7/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian/8
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian/8/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/debian/9
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel/sca.files
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel/5
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel/5/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel/6
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel/6/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel/7
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/rhel/7/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sles
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sles/sca.files
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sles/11
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sles/11/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sles/12
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sles/12/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sunos
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/sunos/*
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/suse/sca.files
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/suse/11
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/suse/11/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/suse/12
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/sca.files
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/12
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/12/04
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/12/04/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/14
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/14/04
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/14/04/*
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/16
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/ubuntu/16/04
-%dir %attr(750, ossec, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/windows
-%attr(640, root, ossec) %config(missingok) %{_localstatedir}/ossec/tmp/sca-%{version}-%{release}-tmp/windows/*
 %dir %attr(750, root, ossec) %{_localstatedir}/ossec/var
 %dir %attr(770, root, ossec) %{_localstatedir}/ossec/var/db
 %dir %attr(770, root, ossec) %{_localstatedir}/ossec/var/db/agents
