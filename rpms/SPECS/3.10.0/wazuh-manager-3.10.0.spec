@@ -171,15 +171,15 @@ fi
 exit 0
 %pre
 
-# Stop Authd if it is running
-if ps aux | grep %{_localstatedir}/ossec/bin/ossec-authd | grep -v grep > /dev/null 2>&1; then
-   kill `ps -ef | grep '%{_localstatedir}/ossec/bin/ossec-authd' | grep -v grep | awk '{print $2}'` > /dev/null 2>&1
-fi
-
-# Ensure that the wazuh-manager is stopped
+# Ensure Wazuh's binaries are stopped
 if [ -d %{_localstatedir}/ossec ] && [ -f %{_localstatedir}/ossec/bin/ossec-control ] ; then
   %{_localstatedir}/ossec/bin/ossec-control stop > /dev/null 2>&1
+
+  ps aux | grep %{_localstatedir}/ossec | grep -v grep > %{_localstatedir}/ossec/packages_files/binaries
+  while read line; do kill -9 $(echo $line | awk '{print $2}'); done < %{_localstatedir}/ossec/packages_files/binaries
+  rm -f %{_localstatedir}/ossec/packages_files/binaries
 fi
+
 
 # Create the ossec group if it doesn't exists
 if command -v getent > /dev/null 2>&1 && ! getent group ossec > /dev/null 2>&1; then

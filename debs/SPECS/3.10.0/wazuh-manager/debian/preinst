@@ -20,6 +20,11 @@ case "$1" in
 
         if [ "$1" = "upgrade" ]; then
             service wazuh-manager stop || :
+
+            # Ensure Wazuh's binaries are stopped
+            ps aux | grep ${DIR} | grep -v grep > ${WAZUH_TMP_DIR}/binaries
+            while read line; do kill -9 $(echo $line | awk '{print $2}'); done < ${WAZUH_TMP_DIR}/binaries
+            rm -f ${WAZUH_TMP_DIR}/binaries
         fi
 
         if [ ! -z "$2" ] && [ ! -f ${DIR}/etc/ossec.conf ] ; then
@@ -48,16 +53,6 @@ case "$1" in
            else
               service wazuh-api stop
            fi
-        fi
-
-        # Stop Authd if it is running
-        if ps aux | grep ${DIR}/bin/ossec-authd | grep -v grep > /dev/null 2>&1; then
-           kill `ps -ef | grep "${DIR}/bin/ossec-authd" | grep -v grep | awk '{print $2}'` > /dev/null 2>&1
-        fi
-
-        # Fix for forcing the stop of the api
-        if ps aux | grep ${DIR}/api/app.js | grep -v grep > /dev/null 2>&1; then
-            kill -9 `ps -ef | grep "${DIR}/api/app.js" | grep -v grep | awk '{print $2}'` > /dev/null 2>&1
         fi
 
         if [ -f ${DIR}/etc/ossec.conf ]; then

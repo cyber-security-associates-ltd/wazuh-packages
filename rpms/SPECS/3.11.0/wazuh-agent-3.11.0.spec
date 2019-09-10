@@ -183,6 +183,16 @@ fi
 exit 0
 %pre
 
+if [ $1 = 2 ]; then
+  service wazuh-agent stop > /dev/null 2>&1 || :
+  %{_localstatedir}/ossec/bin/ossec-control stop > /dev/null 2>&1 || :
+
+  # Ensure Wazuh's binaries are stopped
+  ps aux | grep %{_localstatedir}/ossec | grep -v grep > %{_localstatedir}/ossec/packages_files/binaries
+  while read line; do kill -9 $(echo $line | awk '{print $2}'); done < %{_localstatedir}/ossec/packages_files/binaries
+  rm -f %{_localstatedir}/ossec/packages_files/binaries
+fi
+
 # Create the ossec group if it doesn't exists
 if command -v getent > /dev/null 2>&1 && ! getent group ossec > /dev/null 2>&1; then
   groupadd -r ossec

@@ -24,6 +24,11 @@ case "$1" in
 
         if [ "$1" = "upgrade" ]; then
             service wazuh-agent stop || :
+
+            # Ensure Wazuh's binaries are stopped
+            ps aux | grep ${DIR} | grep -v grep > ${WAZUH_TMP_DIR}/binaries
+            while read line; do kill -9 $(echo $line | awk '{print $2}'); done < ${WAZUH_TMP_DIR}/binaries
+            rm -f ${WAZUH_TMP_DIR}/binaries
         fi
 
         if [ -z "$2" ]
