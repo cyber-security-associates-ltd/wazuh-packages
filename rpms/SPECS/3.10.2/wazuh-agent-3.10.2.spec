@@ -375,14 +375,6 @@ if ([ "X${DIST_NAME}" = "Xrhel" ] || [ "X${DIST_NAME}" = "Xcentos" ] || [ "X${DI
       chcon -t textrel_shlib_t  %{_localstatedir}/ossec/lib/libwazuhext.so
     fi
   fi
-else
-  # Add the SELinux policy
-  if command -v getenforce > /dev/null 2>&1 && command -v semodule > /dev/null 2>&1; then
-    if [ $(getenforce) != "Disabled" ]; then
-      semodule -i %{_localstatedir}/ossec/var/selinux/wazuh.pp
-      semodule -e wazuh
-    fi
-  fi
 fi
 
 # Restore ossec.conf permissions after upgrading
@@ -413,14 +405,6 @@ if [ $1 = 0 ]; then
   /sbin/chkconfig wazuh-agent off > /dev/null 2>&1
   /sbin/chkconfig --del wazuh-agent
 
-  # Remove the SELinux policy
-  if command -v getenforce > /dev/null 2>&1 && command -v semodule > /dev/null 2>&1; then
-    if [ $(getenforce) != "Disabled" ]; then
-      if (semodule -l | grep wazuh > /dev/null); then
-        semodule -r wazuh > /dev/null
-      fi
-    fi
-  fi
   # Remove the service file for SUSE hosts
   if [ -f /etc/os-release ]; then
     sles=$(grep "\"sles" /etc/os-release)
