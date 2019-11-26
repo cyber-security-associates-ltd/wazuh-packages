@@ -501,14 +501,6 @@ chown root:ossec %{_localstatedir}/ossec/ruleset/sca/*
 # Delete the temporary directory
 rm -rf ${SCA_BASE_DIR}
 
-# Add the SELinux policy
-if command -v getenforce > /dev/null 2>&1 && command -v semodule > /dev/null 2>&1; then
-  if [ $(getenforce) != "Disabled" ]; then
-    semodule -i %{_localstatedir}/ossec/var/selinux/wazuh.pp
-    semodule -e wazuh
-  fi
-fi
-
 # Fix duplicated ID issue error
 RULES_DIR=%{_localstatedir}/ossec/ruleset/rules
 OLD_RULES="${RULES_DIR}/0520-vulnerability-detector.xml ${RULES_DIR}/0565-ms_ipsec_rules_json.xml"
