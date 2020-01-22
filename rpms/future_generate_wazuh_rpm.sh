@@ -1,131 +1,139 @@
 #!/bin/bash
 
+# Wazuh package generator
+# Copyright (C) 2015-2020, Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
 CURRENT_PATH="$( cd $(dirname $0) ; pwd -P )"
 ARCHITECTURE="x86_64"
 LEGACY="no"
-OUTDIR="${HOME}/futures/yum/"
+OUTDIR="${CURRENT_PATH}/output/"
+LOCAL_SPECS="${CURRENT_PATH}/SPECS/"
 BRANCH="master"
-RELEASE="1"
+REVISION="1"
 TARGET=""
+JOBS="2"
 DEBUG="no"
-TARGET_VERSION=""
-JOBS="4"
+USER_PATH="no"
+SRC="no"
 RPM_X86_BUILDER="rpm_builder_x86"
 RPM_I386_BUILDER="rpm_builder_i386"
+RPM_PPC64LE_BUILDER="rpm_builder_ppc64le"
 RPM_BUILDER_DOCKERFILE="${CURRENT_PATH}/CentOS/6"
+RPM_PPC64LE_BUILDER_DOCKERFILE="${CURRENT_PATH}/CentOS/7"
 LEGACY_RPM_X86_BUILDER="rpm_legacy_builder_x86"
 LEGACY_RPM_I386_BUILDER="rpm_legacy_builder_i386"
 LEGACY_RPM_BUILDER_DOCKERFILE="${CURRENT_PATH}/CentOS/5"
+LEGACY_TAR_FILE="${LEGACY_RPM_BUILDER_DOCKERFILE}/i386/centos-5-i386.tar.gz"
+TAR_URL="https://packages-dev.wazuh.com/utils/centos-5-i386-build/centos-5-i386.tar.gz"
 INSTALLATION_PATH="/var"
+PACKAGES_BRANCH="master"
+CHECKSUMDIR=""
+CHECKSUM="no"
+USE_LOCAL_SPECS="yes"
+TARGET_VERSION=""
 
-if [ -z "$OUTDIR" ]
-then
-    if [ -n "$RPM_OUTDIR" ]
-    then
-        OUTDIR=$RPM_OUTDIR
-    else
-        echo "ERROR: \$RPM_OUTDIR was not defined."
-        echo "Tip: echo export RPM_OUTDIR=\"/my/output/dir\" >> ~/.bash_profile"
-        return 1
-    fi
+trap ctrl_c INT
+
+if command -v curl > /dev/null 2>&1 ; then
+    DOWNLOAD_TAR="curl ${TAR_URL} -o ${LEGACY_TAR_FILE} -s"
+elif command -v wget > /dev/null 2>&1 ; then
+    DOWNLOAD_TAR="wget ${TAR_URL} -o ${LEGACY_TAR_FILE} -q"
 fi
+
+clean() {
+    exit_code=$1
+
+    # Clean the files
+    rm -rf ${DOCKERFILE_PATH}/{*.tar.gz,wazuh*} ${DOCKERFILE_PATH}/build.sh ${SOURCES_DIRECTORY}
+
+    exit ${exit_code}
+}
+
+ctrl_c() {
+    clean 1
+}
 
 build_rpm() {
     CONTAINER_NAME="$1"
     DOCKERFILE_PATH="$2"
-    VERSION="$3"
-
-    SOURCES_DIRECTORY="/tmp/wazuh-builder/sources-$(( ( RANDOM % 1000000 )  + 1 ))"
-
-    # Download the sources
-    git clone ${SOURCE_REPOSITORY} -b $BRANCH ${SOURCES_DIRECTORY} --depth=1 --single-branch
+    BRANCH_VERSION="$3"
 
     # Copy the necessary files
     cp build.sh ${DOCKERFILE_PATH}
 
-    if [[ "$TARGET" != "api" ]]; then
-        CURRENT_VERSION=$(cat ${SOURCES_DIRECTORY}/src/VERSION | cut -d 'v' -f 2)
-        echo "v$VERSION" >  ${SOURCES_DIRECTORY}/src/VERSION || exit 1
-        sed -i "s|v${CURRENT_VERSION}|v${VERSION}|g" ${SOURCES_DIRECTORY}/src/update/ruleset/RULESET_VERSION || exit 1
-    else
-        CURRENT_VERSION=$(grep version ${SOURCES_DIRECTORY}/package.json | cut -d '"' -f 4)
-        sed -i "s|${CURRENT_VERSION}|${VERSION}|" ${SOURCES_DIRECTORY}/package.json || exit 1
+    # Download the legacy tar file if it is needed
+    if [ "${CONTAINER_NAME}" = "${LEGACY_RPM_I386_BUILDER}" ] && [ ! -f "${LEGACY_TAR_FILE}" ]; then
+        ${DOWNLOAD_TAR}
     fi
 
-    if [[ "$CURRENT_VERSION" != "$VERSION" ]] ; then
-      SHORT_CURRENT_VERSION=$(echo $CURRENT_VERSION | cut -d'.' -f 1,2)
-      echo "Current version -> $CURRENT_VERSION"
-      echo "Short current version -> $SHORT_CURRENT_VERSION"
-      echo "Target version -> $VERSION"
-
-      cp -rp SPECS/$CURRENT_VERSION SPECS/$VERSION
-      mv SPECS/$VERSION/wazuh-manager-$CURRENT_VERSION.spec SPECS/$VERSION/wazuh-manager-$VERSION.spec
-      mv SPECS/$VERSION/wazuh-agent-$CURRENT_VERSION.spec SPECS/$VERSION/wazuh-agent-$VERSION.spec
-      mv SPECS/$VERSION/wazuh-api-$CURRENT_VERSION.spec SPECS/$VERSION/wazuh-api-$VERSION.spec
-
-      sed -i "s|${CURRENT_VERSION}|${VERSION}|" SPECS/$VERSION/wazuh-manager-$VERSION.spec
-      sed -i "s|make deps RESOURCE.*|make deps RESOURCES_URL=http://packages.wazuh.com/deps/${SHORT_CURRENT_VERSION}|" SPECS/$VERSION/wazuh-manager-$VERSION.spec
-      sed -i "0,/make deps/s||make deps RESOURCES_URL=https://packages.wazuh.com/deps/${SHORT_CURRENT_VERSION}|" SPECS/$VERSION/wazuh-manager-$VERSION.spec
-
-      sed -i "s|${CURRENT_VERSION}|${VERSION}|" SPECS/$VERSION/wazuh-agent-$VERSION.spec
-      sed -i "s|make deps RESOURCE.*|make deps RESOURCES_URL=http://packages.wazuh.com/deps/${SHORT_CURRENT_VERSION}|" SPECS/$VERSION/wazuh-agent-$VERSION.spec
-      sed -i "0,/make deps/s||make deps RESOURCES_URL=https://packages.wazuh.com/deps/${SHORT_CURRENT_VERSION}|" SPECS/$VERSION/wazuh-agent-$VERSION.spec
-
-      sed -i "s|${CURRENT_VERSION}|${VERSION}|" SPECS/$VERSION/wazuh-api-$VERSION.spec
-    fi
-
-    cp SPECS/$VERSION/wazuh-$TARGET-$VERSION.spec ${DOCKERFILE_PATH}/wazuh.spec
+    sed -i "s:%{version}:${BRANCH_VERSION}:g" SPECS/${BRANCH_VERSION}/wazuh-${TARGET}-${BRANCH_VERSION}.spec
+    sed -i "s#Version:     .*#Version:     ${TARGET_VERSION}#g" SPECS/${BRANCH_VERSION}/wazuh-${TARGET}-${BRANCH_VERSION}.spec
 
     # Build the Docker image
-    docker build -t ${CONTAINER_NAME} ${DOCKERFILE_PATH}
+    docker build -t ${CONTAINER_NAME} ${DOCKERFILE_PATH} || return 1
 
     # Build the RPM package with a Docker container
-    docker run -t --rm -v $OUTDIR:/var/local/wazuh \
-        -v ${SOURCES_DIRECTORY}:/build_wazuh/wazuh-$TARGET-$VERSION \
-        ${CONTAINER_NAME} $TARGET $VERSION $ARCHITECTURE \
-        $JOBS $RELEASE ${INSTALLATION_PATH} ${DEBUG} || exit 1
+    docker run -t --rm -v ${OUTDIR}:/var/local/wazuh:Z \
+        -v ${CHECKSUMDIR}:/var/local/checksum:Z \
+        -v ${LOCAL_SPECS}:/specs:Z \
+        ${CONTAINER_NAME} ${TARGET} ${BRANCH} ${ARCHITECTURE} \
+        ${JOBS} ${REVISION} ${INSTALLATION_PATH} ${DEBUG} \
+        ${CHECKSUM} ${PACKAGES_BRANCH} ${USE_LOCAL_SPECS} ${SRC} ${LEGACY} ${TARGET_VERSION} || return 1
 
-    # Clean the files
-    rm -rf ${DOCKERFILE_PATH}/{*.sh,*.spec} ${SOURCES_DIRECTORY}
-
-    echo "Package $(ls $OUTDIR -Art | tail -n 1) added to $OUTDIR."
+    echo "Package $(ls -Art ${OUTDIR} | tail -n 1) added to ${OUTDIR}."
 
     return 0
 }
 
 build() {
 
-    if [[ "$TARGET" = "api" ]]; then
+    if [[ ${ARCHITECTURE} == "amd64" ]] || [[ ${ARCHITECTURE} == "x86_64" ]]; then
+        ARCHITECTURE="x86_64"
+    fi
 
-        SOURCE_REPOSITORY="https://github.com/wazuh/wazuh-api"
-        build_rpm ${RPM_X86_BUILDER} ${RPM_BUILDER_DOCKERFILE}/x86_64 ${TARGET_VERSION} || exit 1
+    if [[ "${TARGET}" == "api" ]]; then
+        echo "Computed branch: $(curl -s https://raw.githubusercontent.com/wazuh/wazuh-api/$BRANCH/package.json | grep version | cut -d '"' -f 4)"
+        BRANCH_VERSION=$(curl -s https://raw.githubusercontent.com/wazuh/wazuh-api/$BRANCH/package.json | grep version | cut -d '"' -f 4)
+        if [[ "${ARCHITECTURE}" = "ppc64le" ]]; then
+            build_rpm ${RPM_PPC64LE_BUILDER} ${RPM_PPC64LE_BUILDER_DOCKERFILE}/${ARCHITECTURE} ${BRANCH_VERSION} || return 1
+        else
+            build_rpm ${RPM_X86_BUILDER} ${RPM_BUILDER_DOCKERFILE}/${ARCHITECTURE} ${BRANCH_VERSION} || return 1
+        fi
 
-    elif [[ "$TARGET" = "manager" ]] || [[ "$TARGET" = "agent" ]]; then
+    elif [[ "${TARGET}" == "manager" ]] || [[ "${TARGET}" == "agent" ]]; then
 
-        SOURCE_REPOSITORY="https://github.com/wazuh/wazuh"
+        BRANCH_VERSION=$(curl -s https://raw.githubusercontent.com/wazuh/wazuh/$BRANCH/src/VERSION | cut -d 'v' -f 2)
         BUILD_NAME=""
         FILE_PATH=""
-        if [[ "$LEGACY" = "yes" ]] && [[ "$ARCHITECTURE" = "x86_64" ]]; then
-            OUTDIR="$OUTDIR/5/x86_64"
-            RELEASE="$RELEASE.el5"
+        if [[ "${LEGACY}" == "yes" ]] && [[ "${ARCHITECTURE}" == "x86_64" ]]; then
+            REVISION="${REVISION}.el5"
             BUILD_NAME="${LEGACY_RPM_X86_BUILDER}"
-            FILE_PATH="${LEGACY_RPM_BUILDER_DOCKERFILE}/$ARCHITECTURE"
-        elif [[ "$LEGACY" = "yes" ]] && [[ "$ARCHITECTURE" = "i386" ]]; then
-            OUTDIR="$OUTDIR/5/i386"
-            RELEASE="$RELEASE.el5"
+            FILE_PATH="${LEGACY_RPM_BUILDER_DOCKERFILE}/${ARCHITECTURE}"
+        elif [[ "${LEGACY}" == "yes" ]] && [[ "${ARCHITECTURE}" == "i386" ]]; then
+            REVISION="${REVISION}.el5"
             BUILD_NAME="${LEGACY_RPM_I386_BUILDER}"
-            FILE_PATH="${LEGACY_RPM_BUILDER_DOCKERFILE}/$ARCHITECTURE"
-        elif [[ "$LEGACY" = "no" ]] && [[ "$ARCHITECTURE" = "x86_64" ]]; then
+            FILE_PATH="${LEGACY_RPM_BUILDER_DOCKERFILE}/${ARCHITECTURE}"
+        elif [[ "${LEGACY}" == "no" ]] && [[ "${ARCHITECTURE}" == "x86_64" ]]; then
             BUILD_NAME="${RPM_X86_BUILDER}"
-            FILE_PATH="${RPM_BUILDER_DOCKERFILE}/$ARCHITECTURE"
-        else
+            FILE_PATH="${RPM_BUILDER_DOCKERFILE}/${ARCHITECTURE}"
+        elif [[ "${LEGACY}" == "no" ]] && [[ "${ARCHITECTURE}" == "i386" ]]; then
             BUILD_NAME="${RPM_I386_BUILDER}"
-            FILE_PATH="${RPM_BUILDER_DOCKERFILE}/$ARCHITECTURE"
+            FILE_PATH="${RPM_BUILDER_DOCKERFILE}/${ARCHITECTURE}"
+        elif [[ "${LEGACY}" == "no" ]] && [[ "${ARCHITECTURE}" == "ppc64le" ]]; then
+            BUILD_NAME="${RPM_PPC64LE_BUILDER}"
+            FILE_PATH="${RPM_PPC64LE_BUILDER_DOCKERFILE}/${ARCHITECTURE}"
+        else
+            echo "Invalid architecture. Choose: x86_64 (amd64 is accepted too), ppc64le or i386"
+            return 1
         fi
-        build_rpm ${BUILD_NAME} ${FILE_PATH} ${TARGET_VERSION}|| exit 1
+        build_rpm ${BUILD_NAME} ${FILE_PATH} ${BRANCH_VERSION} || return 1
     else
         echo "Invalid target. Choose: manager, agent or api."
-        exit 1
+        return 1
     fi
 
     return 0
@@ -135,15 +143,20 @@ help() {
     echo
     echo "Usage: $0 [OPTIONS]"
     echo
-    echo "    -b, --branch <branch>     Select Git branch [$BRANCH]."
-    echo "    -v, --version <version>   Define target version to build."
-    echo "    -h, --help                Show this help."
-    echo "    -t, --target              Target package to build: manager, api or agent."
-    echo "    -a, --architecture        Target architecture of the package."
-    echo "    -j, --jobs                Change number of parallel jobs when compiling the manager or agent."
-    echo "    -l, --legacy              Build the package for CentOS 5."
-    echo "    -r, --release             Package release."
-    echo "    -p, --path                Installation path for the package. By default: /var."
+    echo "    -b, --branch <branch>        [Required] Select Git branch or tag e.g. $BRANCH"
+    echo "    -t, --target <target>        [Required] Target package to build [manager/api/agent]."
+    echo "    -a, --architecture <arch>    [Optional] Target architecture of the package [x86_64/i386]."
+    echo "    -r, --revision <rev>         [Optional] Package revision that append to version e.g. x.x.x-rev"
+    echo "    -l, --legacy                 [Optional] Build package for CentOS 5."
+    echo "    -s, --store <path>           [Optional] Set the destination path of package. By default, an output folder will be created."
+    echo "    -j, --jobs <number>          [Optional] Number of parallel jobs when compiling."
+    echo "    -p, --path <path>            [Optional] Installation path for the package. By default: /var."
+    echo "    -d, --debug                  [Optional] Build the binaries with debug symbols and create debuginfo packages. By default: no."
+    echo "    -c, --checksum <path>        [Optional] Generate checksum on the desired path (by default, if no path is specified it will be generated on the same directory than the package)."
+    echo "    --packages-branch <branch>   [Optional] Select Git branch or tag from wazuh-packages repository. e.g ${PACKAGES_BRANCH}"
+    echo "    --dev                        [Optional] Use the SPECS files stored in the host instead of downloading them from GitHub."
+    echo "    --src                        [Optional] Generate the source package in the destination directory."
+    echo "    -h, --help                   Show this help."
     echo
     exit $1
 }
@@ -155,18 +168,8 @@ main() {
     do
         case "$1" in
         "-b"|"--branch")
-            if [ -n "$2" ]
-            then
-                BRANCH="$(echo $2 | cut -d'/' -f2)"
-                shift 2
-            else
-                help 1
-            fi
-            ;;
-        "-v"|"--version")
-            if [ -n "$2" ]
-            then
-                TARGET_VERSION="$2"
+            if [ -n "$2" ]; then
+                BRANCH="$2"
                 BUILD="yes"
                 shift 2
             else
@@ -177,8 +180,7 @@ main() {
             help 0
             ;;
         "-t"|"--target")
-            if [ -n "$2" ]
-            then
+            if [ -n "$2" ]; then
                 TARGET="$2"
                 shift 2
             else
@@ -186,8 +188,7 @@ main() {
             fi
             ;;
         "-a"|"--architecture")
-            if [ -n "$2" ]
-            then
+            if [ -n "$2" ]; then
                 ARCHITECTURE="$2"
                 shift 2
             else
@@ -195,30 +196,32 @@ main() {
             fi
             ;;
         "-j"|"--jobs")
-            if [ -n "$2" ]
-            then
+            if [ -n "$2" ]; then
                 JOBS="$2"
                 shift 2
             else
                 help 1
             fi
             ;;
-        "-r"|"--release")
-            if [ -n "$2" ]
-            then
-                RELEASE="$2"
+        "-r"|"--revision")
+            if [ -n "$2" ]; then
+                REVISION="$2"
                 shift 2
             else
                 help 1
             fi
             ;;
-        "-d"|"--debug")
-            DEBUG="yes"
-            shift 1
-            ;;
-        "-p"|"--path")
+        "-v"|"--version")
             if [ -n "$2" ]
             then
+                TARGET_VERSION="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "-p"|"--path")
+            if [ -n "$2" ]; then
                 INSTALLATION_PATH="$2"
                 shift 2
             else
@@ -229,17 +232,62 @@ main() {
             LEGACY="yes"
             shift 1
             ;;
+        "-d"|"--debug")
+            DEBUG="yes"
+            shift 1
+            ;;
+        "-c"|"--checksum")
+            if [ -n "$2" ]; then
+                CHECKSUMDIR="$2"
+                CHECKSUM="yes"
+                shift 2
+            else
+                CHECKSUM="yes"
+                shift 1
+            fi
+            ;;
+        "-s"|"--store")
+            if [ -n "$2" ]; then
+                OUTDIR="$2"
+                USER_PATH="yes"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "--src")
+            SRC="yes"
+            shift 1
+            ;;
+        "--packages-branch")
+            if [ -n "$2" ]; then
+                PACKAGES_BRANCH="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "--dev")
+            USE_LOCAL_SPECS="yes"
+            shift 1
+            ;;
         *)
             help 1
         esac
     done
 
-    if [[ "$BUILD" != "no" ]]; then
-        build || exit 1
+    if [[ "${USER_PATH}" == "no" ]] && [[ "${LEGACY}" == "yes" ]]; then
+        OUTDIR="${OUTDIR}/5/${ARCHITECTURE}"
     fi
 
+    if [ -z "${CHECKSUMDIR}" ]; then
+        CHECKSUMDIR="${OUTDIR}"
+    fi
 
-    return 0
+    if [[ "$BUILD" != "no" ]]; then
+        build || clean 1
+    fi
+
+    clean 0
 }
-
 main "$@"

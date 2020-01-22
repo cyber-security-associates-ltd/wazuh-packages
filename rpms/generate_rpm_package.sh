@@ -33,7 +33,8 @@ INSTALLATION_PATH="/var"
 PACKAGES_BRANCH="master"
 CHECKSUMDIR=""
 CHECKSUM="no"
-USE_LOCAL_SPECS="no"
+USE_LOCAL_SPECS="yes"
+TARGET_VERSION=""
 
 trap ctrl_c INT
 
@@ -59,6 +60,7 @@ ctrl_c() {
 build_rpm() {
     CONTAINER_NAME="$1"
     DOCKERFILE_PATH="$2"
+    BRANCH_VERSION="$3"
 
     # Copy the necessary files
     cp build.sh ${DOCKERFILE_PATH}
@@ -67,6 +69,10 @@ build_rpm() {
     if [ "${CONTAINER_NAME}" = "${LEGACY_RPM_I386_BUILDER}" ] && [ ! -f "${LEGACY_TAR_FILE}" ]; then
         ${DOWNLOAD_TAR}
     fi
+
+    sed -i "s:%{version}:${BRANCH_VERSION}:g" SPECS/${BRANCH_VERSION}/wazuh-${TARGET}-${BRANCH_VERSION}.spec
+    sed -i "s#Version:     .*#Version:     ${TARGET_VERSION}#g" SPECS/${BRANCH_VERSION}/wazuh-${TARGET}-${BRANCH_VERSION}.spec
+
     # Build the Docker image
     docker build -t ${CONTAINER_NAME} ${DOCKERFILE_PATH} || return 1
 
@@ -76,7 +82,7 @@ build_rpm() {
         -v ${LOCAL_SPECS}:/specs:Z \
         ${CONTAINER_NAME} ${TARGET} ${BRANCH} ${ARCHITECTURE} \
         ${JOBS} ${REVISION} ${INSTALLATION_PATH} ${DEBUG} \
-        ${CHECKSUM} ${PACKAGES_BRANCH} ${USE_LOCAL_SPECS} ${SRC} ${LEGACY} || return 1
+        ${CHECKSUM} ${PACKAGES_BRANCH} ${USE_LOCAL_SPECS} ${SRC} ${LEGACY} ${TARGET_VERSION} || return 1
 
     echo "Package $(ls -Art ${OUTDIR} | tail -n 1) added to ${OUTDIR}."
 
@@ -90,16 +96,17 @@ build() {
     fi
 
     if [[ "${TARGET}" == "api" ]]; then
+        echo "Computed branch: $(curl -s https://raw.githubusercontent.com/wazuh/wazuh-api/$BRANCH/package.json | grep version | cut -d '"' -f 4)"
+        BRANCH_VERSION=$(curl -s https://raw.githubusercontent.com/wazuh/wazuh-api/$BRANCH/package.json | grep version | cut -d '"' -f 4)
         if [[ "${ARCHITECTURE}" = "ppc64le" ]]; then
-            build_rpm ${RPM_PPC64LE_BUILDER} ${RPM_PPC64LE_BUILDER_DOCKERFILE}/${ARCHITECTURE} || return 1
+            build_rpm ${RPM_PPC64LE_BUILDER} ${RPM_PPC64LE_BUILDER_DOCKERFILE}/${ARCHITECTURE} ${BRANCH_VERSION} || return 1
         else
-            build_rpm ${RPM_X86_BUILDER} ${RPM_BUILDER_DOCKERFILE}/${ARCHITECTURE} || return 1
+            build_rpm ${RPM_X86_BUILDER} ${RPM_BUILDER_DOCKERFILE}/${ARCHITECTURE} ${BRANCH_VERSION} || return 1
         fi
-
-        
 
     elif [[ "${TARGET}" == "manager" ]] || [[ "${TARGET}" == "agent" ]]; then
 
+        BRANCH_VERSION=$(curl -s https://raw.githubusercontent.com/wazuh/wazuh/$BRANCH/src/VERSION | cut -d 'v' -f 2)
         BUILD_NAME=""
         FILE_PATH=""
         if [[ "${LEGACY}" == "yes" ]] && [[ "${ARCHITECTURE}" == "x86_64" ]]; then
@@ -123,7 +130,7 @@ build() {
             echo "Invalid architecture. Choose: x86_64 (amd64 is accepted too), ppc64le or i386"
             return 1
         fi
-        build_rpm ${BUILD_NAME} ${FILE_PATH} || return 1
+        build_rpm ${BUILD_NAME} ${FILE_PATH} ${BRANCH_VERSION} || return 1
     else
         echo "Invalid target. Choose: manager, agent or api."
         return 1
@@ -199,6 +206,15 @@ main() {
         "-r"|"--revision")
             if [ -n "$2" ]; then
                 REVISION="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "-v"|"--version")
+            if [ -n "$2" ]
+            then
+                TARGET_VERSION="$2"
                 shift 2
             else
                 help 1

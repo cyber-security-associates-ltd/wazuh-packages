@@ -22,6 +22,7 @@ wazuh_packages_branch=$9
 use_local_specs=${10}
 src=${11}
 legacy=${12}
+target_version=${13}
 wazuh_version=""
 rpmbuild="rpmbuild"
 
@@ -46,7 +47,7 @@ fi
 # Build directories
 build_dir=/build_wazuh
 rpm_build_dir=${build_dir}/rpmbuild
-file_name="wazuh-${build_target}-${wazuh_version}-${package_release}"
+file_name="wazuh-${build_target}-${target_version}-${package_release}"
 rpm_file="${file_name}.${architecture_target}.rpm"
 src_file="${file_name}.src.rpm"
 pkg_path="${rpm_build_dir}/RPMS/${architecture_target}"
@@ -55,7 +56,7 @@ extract_path="${pkg_path}"
 mkdir -p ${rpm_build_dir}/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 
 # Prepare the sources directory to build the source tar.gz
-package_name=wazuh-${build_target}-${wazuh_version}
+package_name=wazuh-${build_target}-${target_version}
 mv wazuh-* ${build_dir}/${package_name}
 
 # Including spec file
@@ -69,7 +70,7 @@ fi
 cp ${specs_path}/${wazuh_version}/wazuh-${build_target}-${wazuh_version}.spec ${rpm_build_dir}/SPECS/${package_name}.spec
 
 # Generating source tar.gz
-cd ${build_dir} && tar czf "${rpm_build_dir}/SOURCES/${package_name}.tar.gz" "${package_name}"
+cd ${build_dir} && tar czf "${rpm_build_dir}/SOURCES/wazuh-${build_target}-${wazuh_version}.tar.gz" "${package_name}"
 
 
 if [ "${architecture_target}" = "i386" ]; then
