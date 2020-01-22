@@ -1,133 +1,121 @@
 #!/bin/bash
 
+# Wazuh package generator
+# Copyright (C) 2015-2020, Wazuh Inc.
+#
+# This program is a free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation.
+
 CURRENT_PATH="$( cd $(dirname $0) ; pwd -P )"
 ARCHITECTURE="amd64"
-OUTDIR="${HOME}/futures/apt/"
-BRANCH="master"
+OUTDIR="${CURRENT_PATH}/output/"
+TARGET_VERSION=""
+BRANCH=""
 REVISION="1"
 TARGET=""
-TARGET_VERSION=""
-JOBS="4"
+JOBS="2"
+DEBUG="no"
 INSTALLATION_PATH="/var/ossec"
 DEB_AMD64_BUILDER="deb_builder_amd64"
 DEB_I386_BUILDER="deb_builder_i386"
+DEB_PPC64LE_BUILDER="deb_builder_ppc64le"
 DEB_AMD64_BUILDER_DOCKERFILE="${CURRENT_PATH}/Debian/amd64"
 DEB_I386_BUILDER_DOCKERFILE="${CURRENT_PATH}/Debian/i386"
+CHECKSUMDIR=""
+CHECKSUM="no"
+DEB_PPC64LE_BUILDER_DOCKERFILE="${CURRENT_PATH}/Debian/ppc64le"
+PACKAGES_BRANCH="master"
+USE_LOCAL_SPECS="yes"
+LOCAL_SPECS="${CURRENT_PATH}"
 
-if [ -z "$OUTDIR" ]
-then
-    if [ -n "$DEB_OUTDIR" ]
-    then
-        OUTDIR=$DEB_OUTDIR
-    else
-        echo "ERROR: \$DEB_OUTDIR was not defined."
-        echo "Tip: echo export DEB_OUTDIR=\"/my/output/dir\" >> ~/.bash_profile"
-        return 1
-    fi
-fi
+trap ctrl_c INT
 
-build_deb() {
-    CONTAINER_NAME="$1"
-    DOCKERFILE_PATH="$2"
-    VERSION="$3"
-
-    SOURCES_DIRECTORY="/tmp/wazuh-builder/sources-$(( ( RANDOM % 1000 )  + 1 ))"
-
-    # Download the sources
-    git clone ${SOURCE_REPOSITORY} -b $BRANCH ${SOURCES_DIRECTORY} --depth=1 --single-branch
-    # Copy the necessary files
-    cp build.sh ${DOCKERFILE_PATH}
-    cp gen_permissions.sh ${SOURCES_DIRECTORY}
-
-    if [[ "$TARGET" != "api" ]]; then
-        # Review " in this command
-        CURRENT_VERSION=$(cat ${SOURCES_DIRECTORY}/src/VERSION | cut -d 'v' -f 2)
-        echo "v$VERSION" >  ${SOURCES_DIRECTORY}/src/VERSION || exit 1
-        sed -i "s|v${CURRENT_VERSION}|v${VERSION}|g" ${SOURCES_DIRECTORY}/src/update/ruleset/RULESET_VERSION || exit 1
-    else
-        # Review " in this command
-        CURRENT_VERSION=$(grep version ${SOURCES_DIRECTORY}/package.json | cut -d '"' -f 4)
-        sed -i "s|${CURRENT_VERSION}|${VERSION}|" ${SOURCES_DIRECTORY}/package.json || exit 1
-    fi
-
-    if [[ "$CURRENT_VERSION" != "$VERSION" ]] ; then
-      SHORT_CURRENT_VERSION=$(echo $CURRENT_VERSION | cut -d'.' -f 1,2)
-      SHORT_VERSION=$(echo $VERSION | cut -d'.' -f 1,2)
-      echo "Current version -> $CURRENT_VERSION"
-      echo "Short current version -> $SHORT_CURRENT_VERSION"
-      echo "Target version -> $VERSION"
-
-      cp -rp SPECS/$CURRENT_VERSION SPECS/$VERSION
-      sed -i "1s|^| -- Wazuh, Inc <info@wazuh.com> Fri, 9 Sep 2018 11:00:00 +0000\n\n|" SPECS/$VERSION/wazuh-manager/debian/changelog
-      sed -i "1s|^|  * More info: https://documentation.wazuh.com/current/release-notes/\n\n|" SPECS/$VERSION/wazuh-manager/debian/changelog
-      sed -i "1s|^|wazuh-manager (${VERSION}-RELEASE) stable; urgency=low\n\n|" SPECS/$VERSION/wazuh-manager/debian/changelog
-      sed -i "s|make -C src deps|make -C src deps RESOURCES_URL=https://packages.wazuh.com/deps/${SHORT_CURRENT_VERSION}|" SPECS/$VERSION/wazuh-manager/debian/rules
-
-      sed -i "1s|^| -- Wazuh, Inc <info@wazuh.com> Fri, 9 Sep 2018 11:00:00 +0000\n\n|" SPECS/$VERSION/wazuh-agent/debian/changelog
-      sed -i "1s|^|  * More info: https://documentation.wazuh.com/current/release-notes/\n\n|" SPECS/$VERSION/wazuh-agent/debian/changelog
-      sed -i "1s|^|wazuh-agent (${VERSION}-RELEASE) stable; urgency=low\n\n|" SPECS/$VERSION/wazuh-agent/debian/changelog
-      sed -i "s|make -C src deps|make -C src deps RESOURCES_URL=https://packages.wazuh.com/deps/${SHORT_CURRENT_VERSION}|" SPECS/$VERSION/wazuh-agent/debian/rules
-
-      sed -i "1s|^| -- Wazuh, Inc <info@wazuh.com> Fri, 9 Sep 2018 11:00:00 +0000\n\n|" SPECS/$VERSION/wazuh-api/debian/changelog
-      sed -i "1s|^|  * More info: https://documentation.wazuh.com/current/release-notes/\n\n|" SPECS/$VERSION/wazuh-api/debian/changelog
-      sed -i "1s|^|wazuh-api (${VERSION}-RELEASE) stable; urgency=low\n\n|" SPECS/$VERSION/wazuh-api/debian/changelog
-
-      VERSION_PATCH="${VERSION: -1}"
-      VERSION_PATCH=$((${VERSION_PATCH} + 1))
-      CURRENT_VERSION_PATCH="${CURRENT_VERSION: -1}"
-      CURRENT_VERSION_PATCH=$((${CURRENT_VERSION_PATCH} + 1))
-
-      sed -i "s|${CURRENT_VERSION}|${VERSION}|g" SPECS/$VERSION/wazuh-api/debian/control
-      sed -i "s|(<< ${SHORT_CURRENT_VERSION}.${CURRENT_VERSION_PATCH})|(<< ${SHORT_VERSION}.${VERSION_PATCH})|g" SPECS/$VERSION/wazuh-api/debian/control
-    fi
-
-    # Copy the "specs" files for the Debian package
-    cp -rp SPECS/$VERSION/wazuh-$TARGET ${DOCKERFILE_PATH}/
-
-    # Build the Docker image
-    docker build -t ${CONTAINER_NAME} ${DOCKERFILE_PATH}
-
-    # Build the Debian package with a Docker container
-    docker run -t --rm -v $OUTDIR:/var/local/wazuh \
-        -v ${SOURCES_DIRECTORY}:/build_wazuh/$TARGET/wazuh-$TARGET-$VERSION \
-        -v ${DOCKERFILE_PATH}/wazuh-$TARGET:/$TARGET \
-        ${CONTAINER_NAME} $TARGET $VERSION $ARCHITECTURE $REVISION $JOBS $INSTALLATION_PATH || exit 1
+clean() {
+    exit_code=$1
 
     # Clean the files
     rm -rf ${DOCKERFILE_PATH}/{*.sh,*.tar.gz,wazuh-*} ${SOURCES_DIRECTORY}
 
-    echo "Package $(ls $OUTDIR -Art | tail -n 1) added to $OUTDIR."
+    exit ${exit_code}
+}
+
+ctrl_c() {
+    clean 1
+}
+
+build_deb() {
+    CONTAINER_NAME="$1"
+    DOCKERFILE_PATH="$2"
+    BRANCH_VERSION="$3"
+
+    # Copy the necessary files
+    cp build.sh ${DOCKERFILE_PATH}
+
+    # Build the Docker image
+    docker build -t ${CONTAINER_NAME} ${DOCKERFILE_PATH} || return 1
+
+    cp -rp SPECS/${BRANCH_VERSION} SPECS/$TARGET_VERSION
+    sed -i "1s|^| -- Wazuh, Inc <info@wazuh.com> Fri, 9 Sep 2018 11:00:00 +0000\n\n|" SPECS/$TARGET_VERSION/wazuh-manager/debian/changelog
+    sed -i "1s|^|  * More info: https://documentation.wazuh.com/current/release-notes/\n\n|" SPECS/$TARGET_VERSION/wazuh-manager/debian/changelog
+    sed -i "1s|^|wazuh-manager (${TARGET_VERSION}-RELEASE) stable; urgency=low\n\n|" SPECS/$TARGET_VERSION/wazuh-manager/debian/changelog
+
+    sed -i "1s|^| -- Wazuh, Inc <info@wazuh.com> Fri, 9 Sep 2018 11:00:00 +0000\n\n|" SPECS/$TARGET_VERSION/wazuh-agent/debian/changelog
+    sed -i "1s|^|  * More info: https://documentation.wazuh.com/current/release-notes/\n\n|" SPECS/$TARGET_VERSION/wazuh-agent/debian/changelog
+    sed -i "1s|^|wazuh-agent (${TARGET_VERSION}-RELEASE) stable; urgency=low\n\n|" SPECS/$TARGET_VERSION/wazuh-agent/debian/changelog
+
+    sed -i "1s|^| -- Wazuh, Inc <info@wazuh.com> Fri, 9 Sep 2018 11:00:00 +0000\n\n|" SPECS/$TARGET_VERSION/wazuh-api/debian/changelog
+    sed -i "1s|^|  * More info: https://documentation.wazuh.com/current/release-notes/\n\n|" SPECS/$TARGET_VERSION/wazuh-api/debian/changelog
+    sed -i "1s|^|wazuh-api (${TARGET_VERSION}-RELEASE) stable; urgency=low\n\n|" SPECS/$TARGET_VERSION/wazuh-api/debian/changelog
+
+    # Build the Debian package with a Docker container
+    # echo "docker run -t --rm -v ${OUTDIR}:/var/local/wazuh:Z -v ${CHECKSUMDIR}:/var/local/checksum:Z -v ${LOCAL_SPECS}:/specs:Z ${CONTAINER_NAME} ${TARGET} ${BRANCH} ${ARCHITECTURE} ${REVISION} ${JOBS} ${INSTALLATION_PATH} ${DEBUG} ${CHECKSUM} ${PACKAGES_BRANCH} ${USE_LOCAL_SPECS} ${TARGET_VERSION}"
+    # exit 0
+    docker run -t --rm -v ${OUTDIR}:/var/local/wazuh:Z \
+        -v ${CHECKSUMDIR}:/var/local/checksum:Z \
+        -v ${LOCAL_SPECS}:/specs:Z \
+        ${CONTAINER_NAME} ${TARGET} ${BRANCH} ${ARCHITECTURE} \
+        ${REVISION} ${JOBS} ${INSTALLATION_PATH} ${DEBUG} \
+        ${CHECKSUM} ${PACKAGES_BRANCH} ${USE_LOCAL_SPECS} ${TARGET_VERSION} || return 1
+
+    echo "Package $(ls -Art ${OUTDIR} | tail -n 1) added to ${OUTDIR}."
 
     return 0
 }
 
 build() {
 
-    if [[ "$TARGET" = "api" ]]; then
+    if [[ "${TARGET}" == "api" ]]; then
+        BRANCH_VERSION=$(curl -s https://raw.githubusercontent.com/wazuh/wazuh-api/$BRANCH/package.json | grep version | cut -d '"' -f 4)
+        if [[ "${ARCHITECTURE}" = "ppc64le" ]]; then
+            build_deb ${DEB_PPC64LE_BUILDER} ${DEB_PPC64LE_BUILDER_DOCKERFILE} ${BRANCH_VERSION} || return 1
+        else
+            build_deb ${DEB_AMD64_BUILDER} ${DEB_AMD64_BUILDER_DOCKERFILE} ${BRANCH_VERSION} || return 1
+        fi
 
-        SOURCE_REPOSITORY="https://github.com/wazuh/wazuh-api"
-        build_deb ${DEB_AMD64_BUILDER} ${DEB_AMD64_BUILDER_DOCKERFILE} ${TARGET_VERSION} || exit 1
-
-    elif [[ "$TARGET" = "manager" ]] || [[ "$TARGET" = "agent" ]]; then
-
-        SOURCE_REPOSITORY="https://github.com/wazuh/wazuh"
+    elif [[ "${TARGET}" == "manager" ]] || [[ "${TARGET}" == "agent" ]]; then
+        BRANCH_VERSION=$(curl -s https://raw.githubusercontent.com/wazuh/wazuh/$BRANCH/src/VERSION | cut -d 'v' -f 2)
         BUILD_NAME=""
         FILE_PATH=""
-        if [[ "$ARCHITECTURE" = "x86_64" ]] || [[ "$ARCHITECTURE" = "amd64" ]]; then
+        if [[ "${ARCHITECTURE}" = "x86_64" ]] || [[ "${ARCHITECTURE}" = "amd64" ]]; then
             ARCHITECTURE="amd64"
             BUILD_NAME="${DEB_AMD64_BUILDER}"
             FILE_PATH="${DEB_AMD64_BUILDER_DOCKERFILE}"
-        elif [[ "$ARCHITECTURE" = "i386" ]]; then
+        elif [[ "${ARCHITECTURE}" = "i386" ]]; then
             BUILD_NAME="${DEB_I386_BUILDER}"
             FILE_PATH="${DEB_I386_BUILDER_DOCKERFILE}"
+        elif [[  "${ARCHITECTURE}" = "ppc64le" ]]; then
+            BUILD_NAME="${DEB_PPC64LE_BUILDER}"
+            FILE_PATH="${DEB_PPC64LE_BUILDER_DOCKERFILE}"
         else
-            echo "Invalid architecture. Choose: x86_64 (amd64 is accepted too) or i386."
-            exit 1
+            echo "Invalid architecture. Choose: x86_64 (amd64 is accepted too) or i386 or ppc64le."
+            return 1
         fi
-        build_deb ${BUILD_NAME} ${FILE_PATH} ${TARGET_VERSION} || exit 1
+        build_deb ${BUILD_NAME} ${FILE_PATH} ${BRANCH_VERSION} || return 1
     else
         echo "Invalid target. Choose: manager, agent or api."
-        exit 1
+        return 1
     fi
 
     return 0
@@ -137,14 +125,17 @@ help() {
     echo
     echo "Usage: $0 [OPTIONS]"
     echo
-    echo "    -b, --branch <branch>     Select Git branch or tag [$BRANCH]."
-    echo "    -v, --version <version>   Define target version to build."
+    echo "    -b, --branch <branch>     [Required] Select Git branch [${BRANCH}]. By default: master."
+    echo "    -t, --target <target>     [Required] Target package to build: manager, api or agent."
+    echo "    -a, --architecture <arch> [Optional] Target architecture of the package. By default: x86_64"
+    echo "    -j, --jobs <number>       [Optional] Change number of parallel jobs when compiling the manager or agent. By default: 4."
+    echo "    -r, --revision <rev>      [Optional] Package revision. By default: 1."
+    echo "    -s, --store <path>        [Optional] Set the directory where the package will be stored. By default: ${HOME}/3.x/apt-dev/"
+    echo "    -p, --path <path>         [Optional] Installation path for the package. By default: /var/ossec."
+    echo "    -d, --debug               [Optional] Build the binaries with debug symbols. By default: no."
+    echo "    -c, --checksum <path>     [Optional] Generate checksum on the desired path (by default, if no path is specified it will be generated on the same directory than the package)."
+    echo "    --dev                     [Optional] Use the SPECS files stored in the host instead of downloading them from GitHub."
     echo "    -h, --help                Show this help."
-    echo "    -t, --target              Target package to build: manager, api or agent."
-    echo "    -a, --architecture        Target architecture of the package."
-    echo "    -j, --jobs                Change number of parallel jobs when compiling the manager or agent."
-    echo "    -r, --revision            Package revision."
-    echo "    -p, --path                Installation path for the package. By default: /var/ossec."
     echo
     exit $1
 }
@@ -156,18 +147,8 @@ main() {
     do
         case "$1" in
         "-b"|"--branch")
-            if [ -n "$2" ]
-            then
-                BRANCH="$(echo $2 | cut -d'/' -f2)"
-                shift 2
-            else
-                help 1
-            fi
-            ;;
-        "-v"|"--version")
-            if [ -n "$2" ]
-            then
-                TARGET_VERSION="$2"
+            if [ -n "$2" ]; then
+                BRANCH="$2"
                 BUILD="yes"
                 shift 2
             else
@@ -178,8 +159,7 @@ main() {
             help 0
             ;;
         "-t"|"--target")
-            if [ -n "$2" ]
-            then
+            if [ -n "$2" ]; then
                 TARGET="$2"
                 shift 2
             else
@@ -187,8 +167,7 @@ main() {
             fi
             ;;
         "-a"|"--architecture")
-            if [ -n "$2" ]
-            then
+            if [ -n "$2" ]; then
                 ARCHITECTURE="$2"
                 shift 2
             else
@@ -196,8 +175,7 @@ main() {
             fi
             ;;
         "-j"|"--jobs")
-            if [ -n "$2" ]
-            then
+            if [ -n "$2" ]; then
                 JOBS="$2"
                 shift 2
             else
@@ -205,8 +183,7 @@ main() {
             fi
             ;;
         "-r"|"--revision")
-            if [ -n "$2" ]
-            then
+            if [ -n "$2" ]; then
                 REVISION="$2"
                 shift 2
             else
@@ -214,9 +191,49 @@ main() {
             fi
             ;;
         "-p"|"--path")
+            if [ -n "$2" ]; then
+                INSTALLATION_PATH="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "-d"|"--debug")
+            DEBUG="yes"
+            shift 1
+            ;;
+        "-c"|"--checksum")
+            if [ -n "$2" ]; then
+                CHECKSUMDIR="$2"
+                CHECKSUM="yes"
+                shift 2
+            else
+                CHECKSUM="yes"
+                shift 1
+            fi
+            ;;
+        "-s"|"--store")
+            if [ -n "$2" ]; then
+                OUTDIR="$2"
+                shift 2
+            else
+                help 1
+            fi
+            ;;
+        "--packages-branch")
+            if [ -n "$2" ]; then
+                PACKAGES_BRANCH="$2"
+                shift 2
+            fi
+            ;;
+        "--dev")
+            USE_LOCAL_SPECS="yes"
+            shift 1
+            ;;
+        "-v"|"--version")
             if [ -n "$2" ]
             then
-                INSTALLATION_PATH="$2"
+                TARGET_VERSION="$2"
                 shift 2
             else
                 help 1
@@ -227,12 +244,17 @@ main() {
         esac
     done
 
-    if [[ "$BUILD" != "no" ]]; then
-        build || exit 1
+    if [ -z "${CHECKSUMDIR}" ]; then
+        CHECKSUMDIR="${OUTDIR}"
     fi
 
+    if [[ "$BUILD" != "no" ]]; then
+        build || clean 1
+    else
+        clean 1
+    fi
 
-    return 0
+    clean 0
 }
 
 main "$@"

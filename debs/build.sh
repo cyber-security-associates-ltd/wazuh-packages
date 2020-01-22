@@ -21,6 +21,7 @@ debug=$7
 checksum=$8
 wazuh_packages_branch=$9
 use_local_specs=${10}
+target_version=${11}
 
 if [ -z "${package_release}" ]; then
     package_release="1"
@@ -50,7 +51,7 @@ else
     package_files="/specs"
     specs_path="${package_files}/SPECS"
 fi
-cp -pr ${specs_path}/${wazuh_version}/wazuh-${build_target}/debian ${sources_dir}/debian
+cp -pr ${specs_path}/${target_version}/wazuh-${build_target}/debian ${sources_dir}/debian
 cp -p ${package_files}/gen_permissions.sh ${sources_dir}
 
 # Generating directory structure to build the .deb package
@@ -85,7 +86,7 @@ else
     linux32 debuild -ai386 -b -uc -us
 fi
 
-deb_file="wazuh-${build_target}_${wazuh_version}-${package_release}_${architecture_target}.deb"
+deb_file="wazuh-${build_target}_${target_version}-${package_release}_${architecture_target}.deb"
 pkg_path="${build_dir}/${build_target}"
 
 if [[ "${checksum}" == "yes" ]]; then

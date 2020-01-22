@@ -11,6 +11,7 @@
 CURRENT_PATH="$( cd $(dirname $0) ; pwd -P )"
 ARCHITECTURE="amd64"
 OUTDIR="${CURRENT_PATH}/output/"
+TARGET_VERSION=""
 BRANCH=""
 REVISION="1"
 TARGET=""
@@ -26,7 +27,7 @@ CHECKSUMDIR=""
 CHECKSUM="no"
 DEB_PPC64LE_BUILDER_DOCKERFILE="${CURRENT_PATH}/Debian/ppc64le"
 PACKAGES_BRANCH="master"
-USE_LOCAL_SPECS="no"
+USE_LOCAL_SPECS="yes"
 LOCAL_SPECS="${CURRENT_PATH}"
 
 trap ctrl_c INT
@@ -47,6 +48,7 @@ ctrl_c() {
 build_deb() {
     CONTAINER_NAME="$1"
     DOCKERFILE_PATH="$2"
+    BRANCH_VERSION="$3"
 
     # Copy the necessary files
     cp build.sh ${DOCKERFILE_PATH}
@@ -54,13 +56,28 @@ build_deb() {
     # Build the Docker image
     docker build -t ${CONTAINER_NAME} ${DOCKERFILE_PATH} || return 1
 
+    cp -rp SPECS/${BRANCH_VERSION} SPECS/$TARGET_VERSION
+    sed -i "1s|^| -- Wazuh, Inc <info@wazuh.com> Fri, 9 Sep 2018 11:00:00 +0000\n\n|" SPECS/$TARGET_VERSION/wazuh-manager/debian/changelog
+    sed -i "1s|^|  * More info: https://documentation.wazuh.com/current/release-notes/\n\n|" SPECS/$TARGET_VERSION/wazuh-manager/debian/changelog
+    sed -i "1s|^|wazuh-manager (${TARGET_VERSION}-RELEASE) stable; urgency=low\n\n|" SPECS/$TARGET_VERSION/wazuh-manager/debian/changelog
+
+    sed -i "1s|^| -- Wazuh, Inc <info@wazuh.com> Fri, 9 Sep 2018 11:00:00 +0000\n\n|" SPECS/$TARGET_VERSION/wazuh-agent/debian/changelog
+    sed -i "1s|^|  * More info: https://documentation.wazuh.com/current/release-notes/\n\n|" SPECS/$TARGET_VERSION/wazuh-agent/debian/changelog
+    sed -i "1s|^|wazuh-agent (${TARGET_VERSION}-RELEASE) stable; urgency=low\n\n|" SPECS/$TARGET_VERSION/wazuh-agent/debian/changelog
+
+    sed -i "1s|^| -- Wazuh, Inc <info@wazuh.com> Fri, 9 Sep 2018 11:00:00 +0000\n\n|" SPECS/$TARGET_VERSION/wazuh-api/debian/changelog
+    sed -i "1s|^|  * More info: https://documentation.wazuh.com/current/release-notes/\n\n|" SPECS/$TARGET_VERSION/wazuh-api/debian/changelog
+    sed -i "1s|^|wazuh-api (${TARGET_VERSION}-RELEASE) stable; urgency=low\n\n|" SPECS/$TARGET_VERSION/wazuh-api/debian/changelog
+
     # Build the Debian package with a Docker container
+    # echo "docker run -t --rm -v ${OUTDIR}:/var/local/wazuh:Z -v ${CHECKSUMDIR}:/var/local/checksum:Z -v ${LOCAL_SPECS}:/specs:Z ${CONTAINER_NAME} ${TARGET} ${BRANCH} ${ARCHITECTURE} ${REVISION} ${JOBS} ${INSTALLATION_PATH} ${DEBUG} ${CHECKSUM} ${PACKAGES_BRANCH} ${USE_LOCAL_SPECS} ${TARGET_VERSION}"
+    # exit 0
     docker run -t --rm -v ${OUTDIR}:/var/local/wazuh:Z \
         -v ${CHECKSUMDIR}:/var/local/checksum:Z \
         -v ${LOCAL_SPECS}:/specs:Z \
         ${CONTAINER_NAME} ${TARGET} ${BRANCH} ${ARCHITECTURE} \
         ${REVISION} ${JOBS} ${INSTALLATION_PATH} ${DEBUG} \
-        ${CHECKSUM} ${PACKAGES_BRANCH} ${USE_LOCAL_SPECS} || return 1
+        ${CHECKSUM} ${PACKAGES_BRANCH} ${USE_LOCAL_SPECS} ${TARGET_VERSION} || return 1
 
     echo "Package $(ls -Art ${OUTDIR} | tail -n 1) added to ${OUTDIR}."
 
@@ -70,15 +87,15 @@ build_deb() {
 build() {
 
     if [[ "${TARGET}" == "api" ]]; then
-
+        BRANCH_VERSION=$(curl -s https://raw.githubusercontent.com/wazuh/wazuh-api/$BRANCH/package.json | grep version | cut -d '"' -f 4)
         if [[ "${ARCHITECTURE}" = "ppc64le" ]]; then
-            build_deb ${DEB_PPC64LE_BUILDER} ${DEB_PPC64LE_BUILDER_DOCKERFILE} || return 1
+            build_deb ${DEB_PPC64LE_BUILDER} ${DEB_PPC64LE_BUILDER_DOCKERFILE} ${BRANCH_VERSION} || return 1
         else
-            build_deb ${DEB_AMD64_BUILDER} ${DEB_AMD64_BUILDER_DOCKERFILE} || return 1
+            build_deb ${DEB_AMD64_BUILDER} ${DEB_AMD64_BUILDER_DOCKERFILE} ${BRANCH_VERSION} || return 1
         fi
 
     elif [[ "${TARGET}" == "manager" ]] || [[ "${TARGET}" == "agent" ]]; then
-
+        BRANCH_VERSION=$(curl -s https://raw.githubusercontent.com/wazuh/wazuh/$BRANCH/src/VERSION | cut -d 'v' -f 2)
         BUILD_NAME=""
         FILE_PATH=""
         if [[ "${ARCHITECTURE}" = "x86_64" ]] || [[ "${ARCHITECTURE}" = "amd64" ]]; then
@@ -95,7 +112,7 @@ build() {
             echo "Invalid architecture. Choose: x86_64 (amd64 is accepted too) or i386 or ppc64le."
             return 1
         fi
-        build_deb ${BUILD_NAME} ${FILE_PATH} || return 1
+        build_deb ${BUILD_NAME} ${FILE_PATH} ${BRANCH_VERSION} || return 1
     else
         echo "Invalid target. Choose: manager, agent or api."
         return 1
@@ -212,6 +229,15 @@ main() {
         "--dev")
             USE_LOCAL_SPECS="yes"
             shift 1
+            ;;
+        "-v"|"--version")
+            if [ -n "$2" ]
+            then
+                TARGET_VERSION="$2"
+                shift 2
+            else
+                help 1
+            fi
             ;;
         *)
             help 1
