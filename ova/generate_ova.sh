@@ -2,7 +2,7 @@
 
 # Program to build the Wazuh Virtual Machine
 # Wazuh package generator
-# Copyright (C) 2015-2019, Wazuh Inc.
+# Copyright (C) 2015-2020, Wazuh Inc.
 #
 # This program is a free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public
@@ -84,6 +84,7 @@ build_ova() {
     # OVA creation with all metadata information.
     vboxmanage export ${VM_EXPORT} -o ${OVA_VM} --vsys 0 --product "Wazuh v${WAZUH_VERSION} OVA" --producturl "https://packages.wazuh.com/vm/wazuh${OVA_VERSION}.ova" --vendor "Wazuh, inc <info@wazuh.com>" --vendorurl "https://wazuh.com" --version "$OVA_VERSION" --description "Wazuh helps you to gain security visibility into your infrastructure by monitoring hosts at an operating system and application level. It provides the following capabilities: log analysis, file integrity monitoring, intrusions detection and policy and compliance monitoring." || clean 1
 
+    vagrant destroy -f
     tar -xvf ${OVA_VM}
 
     python Ova2Ovf.py -s ${OVA_VM} -d ${OVA_FIXED}
@@ -98,9 +99,9 @@ build_ova() {
 
     # Cleaning tasks
     clean 0
-    }
+}
 
-    check_version() {
+check_version() {
 
     if [ "${STATUS_PACKAGES}" = "stable" ]; then
         curl -Isf https://raw.githubusercontent.com/wazuh/wazuh-kibana-app/v${WAZUH_VERSION}-${ELK_VERSION}/README.md > /dev/null || ( echo "Error version ${WAZUH_VERSION}-${ELK_VERSION} not supported." && exit 1 )

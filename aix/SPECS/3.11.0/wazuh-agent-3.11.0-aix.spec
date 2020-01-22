@@ -169,10 +169,9 @@ fi
 
 %preun
 
-/etc/rc.d/init.d/wazuh-agent stop > /dev/null 2>&1 || :
-
 if [ $1 = 0 ]; then
 
+  /etc/rc.d/init.d/wazuh-agent stop > /dev/null 2>&1 || :
   rm -f %{_localstatedir}/ossec/queue/ossec/*
   rm -f %{_localstatedir}/ossec/queue/ossec/.agent_info || :
   rm -f %{_localstatedir}/ossec/queue/ossec/.wait || :
@@ -257,7 +256,11 @@ rm -fr %{buildroot}
 
 
 %changelog
-* Thu Aug 29 2019 support <info@wazuh.com> - 3.11.0
+* Mon Oct 7 2019 support <info@wazuh.com> - 3.11.0
+- More info: https://documentation.wazuh.com/current/release-notes/
+* Mon Sep 23 2019 support <support@wazuh.com> - 3.10.2
+- More info: https://documentation.wazuh.com/current/release-notes/
+* Thu Sep 19 2019 support <support@wazuh.com> - 3.10.1
 - More info: https://documentation.wazuh.com/current/release-notes/
 * Mon Aug 26 2019 support <support@wazuh.com> - 3.10.0
 - More info: https://documentation.wazuh.com/current/release-notes/
@@ -281,7 +284,9 @@ rm -fr %{buildroot}
 - More info: https://documentation.wazuh.com/current/release-notes/
 * Wed Nov 7 2018 support <support@wazuh.com> - 3.7.0
 - More info: https://documentation.wazuh.com/current/release-notes/
-* Wed Sep 7 2018 support <support@wazuh.com> - 3.6.0
+* Mon Sep 10 2018 support <info@wazuh.com> - 3.6.1
+- More info: https://documentation.wazuh.com/current/release-notes/
+* Fri Sep 7 2018 support <support@wazuh.com> - 3.6.0
 - More info: https://documentation.wazuh.com/current/release-notes/
 * Wed Jul 25 2018 support <support@wazuh.com> - 3.5.0
 - More info: https://documentation.wazuh.com/current/release-notes/
