@@ -94,16 +94,23 @@ main() {
 }
 
 clean() {
-    rm -rf doc wodles/oscap/content/* gen_ossec.sh add_localfiles.sh Jenkinsfile*
-    rm -rf src/{addagent,analysisd,client-agent,config,error_messages,external/*,headers,logcollector,monitord,os_auth,os_crypto,os_csyslogd,os_dbdos_execd}
-    rm -rf src/{os_integrator,os_maild,os_netos_regex,os_xml,os_zlib,remoted,reportd,shared,syscheckd,tests,update,wazuh_db,wazuh_modules}
+    # Remove directories
+    rm -rf active-response contrib extensions framework integrations tools
+    rm -rf doc wodles gen_ossec.sh add_localfiles.sh Jenkinsfile*
+    # Remove source code
+    rm -rf src/{addagent,agentlessd,analysisd,client-agent,config,error_messages,external/*,headers,logcollector,monitord,os_auth,os_crypto,os_csyslogd,os_dbdos_execd}
+    rm -rf src/{os_integrator,os_maild,os_net,os_dbd,os_execd,os_regex,os_xml,os_zlib,remoted,reportd,rootcheck,selinux,systemd,util,shared,syscheckd,tests,update,wazuh_db,wazuh_modules}
+    # Remove extra binaries
+    rm -rf src/{agent-auth,manage_agents,ossec-execd,ossec-logcollector,ossec-syscheckd,wazuh-modulesd}
+    # Remove libs
+    rm -rf src/{libwazuh.a,libwazuhext.so}
 
     if [[ "${BUILD_TARGET}" != "winagent" ]]; then
         rm -rf src/win32
     fi
 
     rm -rf src/*.a
-    rm -rf etc/{decoders,lists,rules}
+    rm -rf etc/{decoders,lists,rules,sca}
 
     find etc/templates/config -not -name "sca.files" -delete 2>/dev/null
     find etc/templates/* -maxdepth 0 -not -name "en" -not -name "config" | xargs rm -rf
