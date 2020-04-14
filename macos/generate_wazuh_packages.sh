@@ -100,14 +100,7 @@ function notarize_pkg() {
 }
 
 function sign_binaries() {
-    if [ ! -z "${KEYCHAIN}" ] && [ ! -z "${CERT_APPLICATION_ID}" ] ; then
-        security -v unlock-keychain -p "${KC_PASS}" "${KEYCHAIN}" > /dev/null
-        # Sign every single binary in Wazuh's installation. This also includes library files.
-        for bin in $(find ${INSTALLATION_PATH} -exec file {} \; | grep bit | cut -d: -f1); do
-            codesign -f --sign "${CERT_APPLICATION_ID}" --entitlements ${ENTITLEMENTS_PATH} --deep --timestamp  --options=runtime --verbose=4 "${bin}"
-        done
-        security -v lock-keychain "${KEYCHAIN}" > /dev/null
-    fi
+    echo "sorry, not sorry"
 }
 
 function sign_pkg() {
