@@ -9,10 +9,10 @@ STATUS_PACKAGES=$3
 DIRECTORY=$4
 ELK_MAJOR=`echo ${ELK_VERSION}|cut -d"." -f1`
 ELK_MINOR=`echo ${ELK_VERSION}|cut -d"." -f2`
-config_files="/var/provision/wazuh-packages/Config_files"
+config_files="/var/provision/wazuh-packages/ova/Config_files"
 
-. /var/provision/wazuh-packages/Libraries/wazuh_functions.sh
-. /var/provision/wazuh-packages/Libraries/elastic_functions.sh
+. /var/provision/wazuh-packages/ova/Libraries/wazuh_functions.sh
+. /var/provision/wazuh-packages/ova/Libraries/elastic_functions.sh
 
 # Setting wazuh default root password
 yes wazuh | passwd root
