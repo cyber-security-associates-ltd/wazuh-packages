@@ -218,7 +218,6 @@ disable_repos_and_clean(){
 
     # Cleaning tasks
     yum clean all && rm -rf /var/cache/yum
-    userdel -fr vagrant
 }
 elastic_stack_6(){
 
