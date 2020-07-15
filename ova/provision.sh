@@ -25,7 +25,7 @@ echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 # Dependences
 yum install openssl -y
 
-curl -so config_files/filebeat.yml https://raw.githubusercontent.com/wazuh/wazuh/v${WAZUH_VERSION}/extensions/filebeat/7.x/filebeat.yml
+curl -so ${config_files}/filebeat.yml https://raw.githubusercontent.com/wazuh/wazuh/v${WAZUH_VERSION}/extensions/filebeat/7.x/filebeat.yml
 
 install_wazuh
 
