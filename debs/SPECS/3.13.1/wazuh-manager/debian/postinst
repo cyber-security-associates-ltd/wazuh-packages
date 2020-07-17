@@ -129,9 +129,6 @@ case "$1" in
         fi
     fi
 
-    # Restoring file permissions
-    . ${SCRIPTS_DIR}/restore-permissions.sh
-
     # Restore sslmanager.key and sslmanager.cert
     if [ -f ${WAZUH_TMP_DIR}/sslmanager.cert ]; then
         mv ${WAZUH_TMP_DIR}/sslmanager.cert ${DIR}/etc/sslmanager.cert
