@@ -170,6 +170,7 @@ override_dh_install:
 	cp etc/templates/config/ubuntu/12/04/sca.files ${TARGET_DIR}$(INSTALLATION_SCRIPTS_DIR)/sca/ubuntu/12/04
 	cp etc/templates/config/ubuntu/14/04/sca.files ${TARGET_DIR}$(INSTALLATION_SCRIPTS_DIR)/sca/ubuntu/14/04
 
+	./gen_permissions.sh $(INSTALLATION_DIR)/ /tmp/restore-permissions.sh
 
 	# Copying systemd file
 	mkdir -p ${TARGET_DIR}/etc/
@@ -178,7 +179,9 @@ override_dh_install:
 
 	cp src/systemd/wazuh-manager.service ${TARGET_DIR}/etc/systemd/system/
 
-
+override_dh_fixperms:
+	dh_fixperms
+	. /tmp/restore-permissions.sh
 
 override_dh_auto_clean:
 	$(MAKE) -C src clean
