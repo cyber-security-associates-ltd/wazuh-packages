@@ -101,42 +101,7 @@ case "$1" in
     chmod -R 660 ${DIR}/var/db/* > /dev/null 2>&1 || true
     chmod 660 ${DIR}/var/db/.profile.db > /dev/null 2>&1 || true
     chmod 770 ${DIR}/var/db/agents > /dev/null 2>&1 || true
-    # Restore client.keys configuration
-    if [ -f ${WAZUH_TMP_DIR}/client.keys ]; then
-        mv ${WAZUH_TMP_DIR}/client.keys ${DIR}/etc/client.keys
-    fi
-    # Restore local insternal options configuration
-    if [ -f ${WAZUH_TMP_DIR}/local_internal_options.conf ]; then
-        mv ${WAZUH_TMP_DIR}/local_internal_options.conf ${DIR}/etc/local_internal_options.conf
-    fi
-    # Restore lists
-    if [ -d ${WAZUH_TMP_DIR}/lists ]; then
-        cp -rp ${WAZUH_TMP_DIR}/lists  ${DIR}/etc/
-    fi
-    # Restore ossec.conf configuration
-    if [ -f ${WAZUH_TMP_DIR}/ossec.conf ]; then
-        mv ${WAZUH_TMP_DIR}/ossec.conf ${DIR}/etc/ossec.conf
-    fi
-    # Restore local_rules.xml configuration
-    if [ -f ${WAZUH_TMP_DIR}/local_rules.xml ]; then
-        mv ${WAZUH_TMP_DIR}/local_rules.xml ${DIR}/etc/rules/local_rules.xml
-    fi
-    # Restore local_decoders.xml configuration
-    if [ -f ${WAZUH_TMP_DIR}/local_decoder.xml ]; then
-        mv ${WAZUH_TMP_DIR}/local_decoder.xml ${DIR}/etc/decoders/local_decoder.xml
-    fi
 
-    # Restore group files
-    if [ -d ${WAZUH_TMP_DIR}/group ]; then
-        cp -rfp ${WAZUH_TMP_DIR}/group/* ${DIR}/etc/shared
-        rm -rf ${WAZUH_TMP_DIR}/group/
-    fi
-
-    # Restore RBAC database
-    if [ -f ${WAZUH_TMP_DIR}/rbac.db ]; then
-        cp -fp ${WAZUH_TMP_DIR}/rbac.db ${DIR}/api/configuration/security/rbac.db
-        rm -rf ${WAZUH_TMP_DIR}/rbac.db
-    fi
 
     # More files
     touch ${DIR}/etc/client.keys
@@ -244,16 +209,6 @@ case "$1" in
     # Delete installation scripts
     if [ -d ${SCRIPTS_DIR} ]; then
         rm -rf ${SCRIPTS_DIR}
-    fi
-
-    # Delete tmp directory
-    if [ -d ${WAZUH_TMP_DIR} ]; then
-        rm -r ${WAZUH_TMP_DIR}
-    fi
-
-    # If the parent directory is empty, delete it
-    if [ -z "$(ls -A ${WAZUH_GLOBAL_TMP_DIR})" ]; then
-        rm -rf ${WAZUH_GLOBAL_TMP_DIR}
     fi
 
     # Fix /etc/ossec-init.conf

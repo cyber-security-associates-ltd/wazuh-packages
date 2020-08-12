@@ -1,0 +1,11 @@
+/var/ossec/api/configuration/api.yaml
+/var/ossec/etc/ossec.conf
+/var/ossec/etc/client.keys
+/var/ossec/etc/local_internal_options.conf
+/var/ossec/etc/decoders/local_decoder.xml
+/var/ossec/etc/lists/audit-keys
+/var/ossec/etc/lists/audit-keys.cdb
+/var/ossec/etc/lists/security-eventchannel
+/var/ossec/etc/lists/security-eventchannel.cdb
+/var/ossec/etc/shared/default/agent.conf
+/var/ossec/etc/rules/local_rules.xml

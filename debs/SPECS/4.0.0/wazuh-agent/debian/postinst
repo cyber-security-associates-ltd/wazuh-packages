@@ -52,19 +52,6 @@ case "$1" in
         chown root:${GROUP} ${DIR}/etc/localtime
     fi
 
-    # Restore the local rules, client.keys and local_decoder
-    if [ -f ${WAZUH_TMP_DIR}/client.keys ]; then
-        cp ${WAZUH_TMP_DIR}/client.keys ${DIR}/etc/client.keys
-    fi
-    # Restore ossec.conf configuration
-    if [ -f ${WAZUH_TMP_DIR}/ossec.conf ]; then
-        mv ${WAZUH_TMP_DIR}/ossec.conf ${DIR}/etc/ossec.conf
-    fi
-    # Restore internal options configuration
-    if [ -f ${WAZUH_TMP_DIR}/local_internal_options.conf ]; then
-        mv ${WAZUH_TMP_DIR}/local_internal_options.conf ${DIR}/etc/local_internal_options.conf
-    fi
-
     # Install the SCA files
     if [ -d "${SCA_BASE_DIR}" ]; then
 
