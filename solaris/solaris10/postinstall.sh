@@ -35,7 +35,13 @@ if [ -f /etc/init.d/wazuh-agent ]; then
         /etc/init.d/wazuh-agent stop > /dev/null 2>&1
 fi
 
-## Delete tmp directory
+# Generate ossec-init.conf
+${DIR}/installation_scripts/gen_ossec.sh init agent ${DIR} > ${DIR}/etc/ossec-init.conf
+
+# Delete installation_scripts directory
+rm -rf ${DIR}/installation_scripts
+
+# Delete tmp directory
 if [ -d ${OSSEC_HIDS_TMP_DIR} ]; then
     rm -r ${OSSEC_HIDS_TMP_DIR}
 fi

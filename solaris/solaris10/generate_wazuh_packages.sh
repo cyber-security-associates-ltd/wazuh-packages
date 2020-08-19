@@ -160,6 +160,8 @@ clone(){
 
 package(){
     cd ${CURRENT_PATH}
+    mkdir ${install_path}/installation_scripts
+    cp ${SOURCE}/gen_ossec.sh ${install_path}/installation_scripts
     find ${install_path} | awk 'length > 0' > "wazuh-agent_$VERSION.list"
     ver=`echo $VERSION | cut -d'v' -f 2`
     sed  "s:expected_platform=\".*\":expected_platform=\"$ARCH\":g" checkinstall.sh > checkinstall.sh.new && mv checkinstall.sh.new checkinstall.sh
