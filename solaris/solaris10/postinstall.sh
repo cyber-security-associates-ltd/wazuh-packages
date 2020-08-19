@@ -39,7 +39,7 @@ fi
 ${DIR}/installation_scripts/gen_ossec.sh init agent ${DIR} > ${DIR}/etc/ossec-init.conf
 
 # Delete installation_scripts directory
-rm -rf ${DIR}/installation_scripts
+#rm -rf ${DIR}/installation_scripts
 
 # Delete tmp directory
 if [ -d ${OSSEC_HIDS_TMP_DIR} ]; then

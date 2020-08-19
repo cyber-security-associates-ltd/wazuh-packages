@@ -160,8 +160,17 @@ clone(){
 
 package(){
     cd ${CURRENT_PATH}
-    mkdir ${install_path}/installation_scripts
+    mkdir -p ${install_path}/installation_scripts/src/init
+    mkdir -p ${install_path}/installation_scripts/etc/templates/
     cp ${SOURCE}/gen_ossec.sh ${install_path}/installation_scripts
+    cp ${SOURCE}/src/init/inst-functions.sh ${install_path}/installation_scripts/src/init
+    cp ${SOURCE}/src/init/shared.sh ${install_path}/installation_scripts/src/init
+    cp ${SOURCE}/src/init/template-select.sh ${install_path}/installation_scripts/src/init
+    cp ${SOURCE}/src/init/dist-detect.sh ${install_path}/installation_scripts/src/init
+    cp ${SOURCE}/src/VERSION ${install_path}/installation_scripts/src
+    cp ${SOURCE}/src/REVISION ${install_path}/installation_scripts/src
+    cp ${SOURCE}/src/LOCATION ${install_path}/installation_scripts/src
+    cp ${SOURCE}/etc/templates/config ${install_path}/installation_scripts/etc/templates/config
     find ${install_path} | awk 'length > 0' > "wazuh-agent_$VERSION.list"
     ver=`echo $VERSION | cut -d'v' -f 2`
     sed  "s:expected_platform=\".*\":expected_platform=\"$ARCH\":g" checkinstall.sh > checkinstall.sh.new && mv checkinstall.sh.new checkinstall.sh

@@ -69,6 +69,7 @@ chown root:${GROUP} /etc/ossec-init.conf
 . ${INSTALLATION_SCRIPTS_DIR}/src/init/dist-detect.sh
 
 upgrade=$(launchctl getenv WAZUH_PKG_UPGRADE)
+${INSTALLATION_SCRIPTS_DIR}/gen_ossec.sh init agent ${DIR} > ${DIR}/etc/ossec-init.conf
 
 if [ "${upgrade}" = "false" ]; then
     ${INSTALLATION_SCRIPTS_DIR}/gen_ossec.sh conf agent ${DIST_NAME} ${DIST_VER}.${DIST_SUBVER} ${DIR} > ${DIR}/etc/ossec.conf
