@@ -147,10 +147,7 @@ case "$1" in
         fi
         update-rc.d wazuh-agent defaults > /dev/null 2>&1
     fi
-
-    # Register and configure agent if Wazuh environment variables are defined
-    ${DIR}/bin/register_configure_agent.sh > /dev/null || :
-
+    
     # Restore OpenSCAP policies files
     if [ -d ${WAZUH_TMP_DIR}/oscap ]; then
         cp -R ${WAZUH_TMP_DIR}/oscap/* ${DIR}/wodles/oscap/content/

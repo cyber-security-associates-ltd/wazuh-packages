@@ -49,8 +49,6 @@ DISABLE_SHARED="yes" DISABLE_SYSC="yes" ./install.sh
 # Remove unnecessary files or directories
 rm -rf %{_localstatedir}/ossec/selinux
 
-# Install the auto-deploy script in bin
-install -m 0750 src/init/register_configure_agent.sh ${RPM_BUILD_ROOT}%{_localstatedir}/ossec/bin
 
 # Create directories
 mkdir -p ${RPM_BUILD_ROOT}%{_init_scripts}
@@ -141,13 +139,6 @@ if [ $1 = 1 ]; then
   chmod 0660 %{_localstatedir}/ossec/logs/active-responses.log
 
 
-fi
-
-if [ $1 = 1 ]; then
-  # Register and configure agent if Wazuh environment variables are defined
-  %{_localstatedir}/ossec/bin/register_configure_agent.sh > /dev/null || :
-else
-  %{_localstatedir}/ossec/bin/register_configure_agent.sh upgrade > /dev/null || :
 fi
 
 ln -fs /etc/rc.d/init.d/wazuh-agent /etc/rc.d/rc2.d/S97wazuh-agent
