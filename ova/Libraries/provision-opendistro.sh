@@ -155,8 +155,8 @@ installElasticsearch() {
         # if [ ${ram} -eq "0" ]; then
         #     ram=1;
         # fi
-        # sed -i "s/-Xms1g/-Xms${ram}g/" /etc/elasticsearch/jvm.options $debug
-        # sed -i "s/-Xmx1g/-Xmx${ram}g/" /etc/elasticsearch/jvm.options $debug
+        # sed -i "s/-Xms1g/-Xms${ram}g/" /etc/elasticsearch/jvm.options 
+        # sed -i "s/-Xmx1g/-Xmx${ram}g/" /etc/elasticsearch/jvm.options 
         jv=$(java -version 2>&1 | grep -o -m1 '1.8.0' )
         if [ "$jv"="1.8.0" ]; then
             ln -s /usr/lib/jvm/java-1.8.0/lib/tools.jar /usr/share/elasticsearch/lib/
