@@ -16,7 +16,7 @@ config_files="/var/provision/wazuh-packages/ova/Config_files"
 libraries_files="/var/provision/wazuh-packages/ova/Libraries"
 
 echo "${STATUS_PACKAGES}"
-. /vagrant/Libraries/provision-opendistro.sh
+. /var/provision/Libraries/provision-opendistro.sh
 
 
 # Setting wazuh default root password
