@@ -11,9 +11,9 @@ BRANCH=$5
 DIRECTORY="/var/ossec"
 ELK_MAJOR=`echo ${ELK_VERSION}|cut -d"." -f1`
 ELK_MINOR=`echo ${ELK_VERSION}|cut -d"." -f2`
-config_files="/vagrant/Config_files"
 automatic_set_ram_location="/etc/"
-libraries_files="/vagrant/Libraries/"
+config_files="/var/provision/wazuh-packages/ova/Config_files"
+libraries_files="/var/provision/wazuh-packages/ova/Libraries"
 
 echo "${STATUS_PACKAGES}"
 . /vagrant/Libraries/provision-opendistro.sh
@@ -39,7 +39,7 @@ installKibana
 checkInstallation
 cleanInstall
 
-rm -rf /vagrant
+rm -rf /var/provision
 
 systemctl stop kibana
 systemctl filebeat kibana
