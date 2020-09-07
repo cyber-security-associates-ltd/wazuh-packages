@@ -137,7 +137,7 @@ installElasticsearch() {
         cd /etc/elasticsearch/certs 
         curl -so /etc/elasticsearch/certs/search-guard-tlstool-1.8.zip https://maven.search-guard.com/search-guard-tlstool/1.8/search-guard-tlstool-1.8.zip --max-time 300 
         unzip search-guard-tlstool-1.8.zip -d searchguard 
-        curl -so /etc/elasticsearch/certs/searchguard/search-guard.yml https://raw.githubusercontent.com/wazuh/wazuh/${BRANCH}/extensions/searchguard/search-guard-aio.yml --max-time 300 
+        curl -so /etc/elasticsearch/certs/searchguard/search-guard.yml https://raw.githubusercontent.com/wazuh/wazuh-documentation/${BRANCH}/resources/open-distro/searchguard/search-guard-aio.yml --max-time 300 
         chmod +x searchguard/tools/sgtlstool.sh 
         ./searchguard/tools/sgtlstool.sh -c ./searchguard/search-guard.yml -ca -crt -t /etc/elasticsearch/certs/ $debug 
         if [ "$?" != 0 ]; then
@@ -219,7 +219,7 @@ installKibana() {
         echo "Error: Kibana installation failed"
         exit 1;
     else
-        curl -so /etc/kibana/kibana.yml https://raw.githubusercontent.com/wazuh/wazuh/${BRANCH}/extensions/kibana/7.x/kibana_all_in_one.yml --max-time 300 $debug
+        curl -so /etc/kibana/kibana.yml https://raw.githubusercontent.com/wazuh/wazuh-documentation/${BRANCH}/resources/open-distro/kibana/7.x/kibana_all_in_one.yml --max-time 300 $debug
         cd /usr/share/kibana $debug
 
         if [ "${STATUS_PACKAGES}" = "prod" ]; then
