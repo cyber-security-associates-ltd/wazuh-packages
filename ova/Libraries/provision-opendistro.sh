@@ -11,20 +11,21 @@ logger() {
 startService() {
 
     if [ -n "$(ps -e | egrep ^\ *1\ .*systemd$)" ]; then
-        systemctl daemon-reload $debug
-        systemctl enable $1.service $debug
-        systemctl start $1.service $debug
+        systemctl daemon-reload 
+        systemctl enable $1.service 
+        systemctl start $1.service 
         if [ "$?" != 0 ]
         then
             echo "${1^} could not be started."
+            systemctl status elasticsearch -l
             exit 1;
         else
             echo "${1^} started"
         fi
     elif [ -n "$(ps -e | egrep ^\ *1\ .*init$)" ]; then
-        chkconfig $1 on $debug
-        service $1 start $debug
-        /etc/init.d/$1 start $debug
+        chkconfig $1 on 
+        service $1 start 
+        /etc/init.d/$1 start 
         if [ "$?" != 0 ]
         then
             echo "${1^} could not be started."
@@ -33,7 +34,7 @@ startService() {
             echo "${1^} started"
         fi
     elif [ -x /etc/rc.d/init.d/$1 ] ; then
-        /etc/rc.d/init.d/$1 start $debug
+        /etc/rc.d/init.d/$1 start 
         if [ "$?" != 0 ]
         then
             echo "${1^} could not be started."
@@ -62,9 +63,9 @@ getHelp() {
 ## Install the required packages for the installation
 installPrerequisites() {
     logger "Installing all necessary utilities for the installation..."
-    $sys_type install curl unzip wget libcap -y -q $debug
+    $sys_type install curl unzip wget libcap -y -q 
     echo -e '[AdoptOpenJDK] \nname=AdoptOpenJDK \nbaseurl=http://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/centos/$releasever/$basearch\nenabled=1\ngpgcheck=1\ngpgkey=https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public' | tee /etc/yum.repos.d/adoptopenjdk.repo $debug
-    $sys_type install adoptopenjdk-11-hotspot -y -q $debug
+    $sys_type install adoptopenjdk-11-hotspot -y -q 
     export JAVA_HOME=/usr/
 
     if [ "$?" != 0 ]; then
@@ -79,7 +80,7 @@ installPrerequisites() {
 addWazuhrepo() {
     major_version="$(echo ${WAZUH_VERSION} | head -c 1)"
     logger "Adding the Wazuh repository..."
-    rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH $debug
+    rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH 
     if [ "${STATUS_PACKAGES}" = "prod" ]; then
       logger "Adding production repository..."
       echo -e "[wazuh_repo]\ngpgcheck=1\ngpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\nenabled=1\nname=EL-$releasever - Wazuh\nbaseurl=https://packages.wazuh.com/${major_version}.x/yum/\nprotect=1" | tee /etc/yum.repos.d/wazuh.repo $debug
@@ -98,10 +99,10 @@ addWazuhrepo() {
 
 ## Wazuh manager
 installWazuh() {
-
+ # If version is less than 4.0.0 install wazuh api
 
     logger "Installing the Wazuh manager..."
-    $sys_type install wazuh-manager-${WAZUH_VERSION} -y -q $debug
+    $sys_type install wazuh-manager-${WAZUH_VERSION} -y -q 
     if [ "$?" != 0 ]; then
         echo "Error: Wazuh installation failed"
         exit 1;
@@ -114,7 +115,7 @@ installWazuh() {
 installElasticsearch() {
 
     logger "Installing Open Distro for Elasticsearch..."
-    $sys_type install opendistroforelasticsearch-${OPENDISTRO_VERSION} -y -q $debug
+    $sys_type install opendistroforelasticsearch-${OPENDISTRO_VERSION} -y -q 
 
     if [ "$?" != 0 ]; then
         echo "Error: Elasticsearch installation failed"
@@ -123,8 +124,6 @@ installElasticsearch() {
         logger "Done"
 
         logger "Configuring Elasticsearch..."
-
-        
 
 
         curl -so /etc/elasticsearch/elasticsearch.yml https://raw.githubusercontent.com/wazuh/wazuh-documentation/${BRANCH}/resources/open-distro/elasticsearch/7.x/elasticsearch_all_in_one.yml --max-time 300
@@ -149,16 +148,18 @@ installElasticsearch() {
         rm /etc/elasticsearch/certs/client-certificates.readme /etc/elasticsearch/certs/elasticsearch_elasticsearch_config_snippet.yml search-guard-tlstool-1.7.zip -f $debug
 
         # Configure JVM options for Elasticsearch
+        
         ram_gb=$(free -g | awk '/^Mem:/{print $2}')
         ram=$(( ${ram_gb} / 2 ))
 
         if [ ${ram} -eq "0" ]; then
             ram=1;
         fi
-        sed -i "s/-Xms1g/-Xms${ram}g/" /etc/elasticsearch/jvm.options 
-        sed -i "s/-Xmx1g/-Xmx${ram}g/" /etc/elasticsearch/jvm.options 
+        sed -i "s/-Xms1g/-Xms${ram}g/" "/etc/elasticsearch/jvm.options" $debug
+        sed -i "s/-Xmx1g/-Xmx${ram}g/" "/etc/elasticsearch/jvm.options" $debug
+        
         jv=$(java -version 2>&1 | grep -o -m1 '1.8.0' )
-        if [ "$jv"="1.8.0" ]; then
+        if [ "$jv" = "1.8.0" ]; then
             ln -s /usr/lib/jvm/java-1.8.0/lib/tools.jar /usr/share/elasticsearch/lib/
             echo "root hard nproc 4096" >> /etc/security/limits.conf
             echo "root soft nproc 4096" >> /etc/security/limits.conf
@@ -166,7 +167,7 @@ installElasticsearch() {
             echo "elasticsearch soft nproc 4096" >> /etc/security/limits.conf
             echo "bootstrap.system_call_filter: false" >> /etc/elasticsearch/elasticsearch.yml
         fi
-
+        
         # Start Elasticsearch
         startService "elasticsearch"
         echo "Initializing Elasticsearch..."
@@ -205,7 +206,6 @@ installFilebeat() {
         mv /etc/elasticsearch/certs/filebeat* /etc/filebeat/certs/ $debug
         # Start Filebeat
         startService "filebeat"
-
         logger "Done"
     fi
 }
@@ -229,9 +229,9 @@ installKibana() {
         fi
 
         if [ "${STATUS_PACKAGES}" = "prod" ]; then
-            sudo -u kibana /usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/${major_version}.x/ui/kibana/wazuhapp-${WAZUH_VERSION}_${ELK_VERSION}.zip $debug
+            sudo -u kibana /usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/${major_version}.x/ui/kibana/wazuh_kibana-${WAZUH_VERSION}_${ELK_VERSION}-1.zip $debug
         elif [ "${STATUS_PACKAGES}" = "dev" ]; then
-            sudo -u kibana /usr/share/kibana/bin/kibana-plugin install https://packages-dev.wazuh.com/pre-release/ui/kibana/wazuhapp-${WAZUH_VERSION}_${ELK_VERSION}.zip $debug
+            sudo -u kibana /usr/share/kibana/bin/kibana-plugin install https://packages-dev.wazuh.com/pre-release/ui/kibana/wazuh_kibana-${WAZUH_VERSION}_${ELK_VERSION}-1.zip $debug
         fi        
         
         if [ "$?" != 0 ]
