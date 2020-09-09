@@ -1,7 +1,7 @@
 FROM centos:6
 # Install all the necessary tools to build the packages
 RUN rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
-RUN yum install -y centos-release-scl gcc make cmake git \
+RUN yum install -y centos-release-scl gcc make git \
     openssh-clients sudo gnupg \
     automake autoconf libtool policycoreutils-python \
     yum-utils epel-release redhat-rpm-config rpm-devel \
@@ -12,7 +12,7 @@ RUN yum install -y centos-release-scl gcc make cmake git \
     e2fsprogs-devel libacl-devel libattr-devel \
     openssl-devel libxml2-devel kexec-tools elfutils \
     libarchive-devel elfutils-libelf-devel \
-    elfutils-libelf patchelf elfutils-devel libgcrypt-devel
+    elfutils-libelf patchelf elfutils-devel libgcrypt-devel 
 
 # Warning: this repo has been disabled by the vendor
 RUN mv /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo.old
@@ -27,7 +27,7 @@ RUN curl -O http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz && \
     cd autoconf-2.69 && ./configure && make && make install
 
 RUN curl -O http://vault.centos.org/7.7.1908/os/Source/SPackages/libarchive-3.1.2-12.el7.src.rpm && \
-    rpmbuild --rebuild libarchive-3.1.2-12.el7.src.rpm && rpm -Uvh /root/rpmbuild/RPMS/x86_64/* --nodeps
+    rpmbuild --rebuild libarchive-3.1.2-12.el7.src.rpm && rpm -Uvh /root/rpmbuild/RPMS/x86_64/*
 
 RUN curl -O https://packages.wazuh.com/utils/rpm/rpm-4.15.1.tar.bz2 && \
     tar -xjf rpm-4.15.1.tar.bz2 && cd rpm-4.15.1 && \

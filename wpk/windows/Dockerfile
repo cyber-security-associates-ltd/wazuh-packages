@@ -4,11 +4,10 @@ RUN apt-get update && \
     apt-get -y install \
       python \
       git \
-      curl \
-      jq && \
+      curl && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python get-pip.py && \
-    pip install --upgrade cryptography awscli
+    pip install --upgrade cryptography 
 
 ADD wpkpack.py /usr/local/bin/wpkpack
 ADD run.sh /usr/local/bin/run
