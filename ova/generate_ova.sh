@@ -65,8 +65,7 @@ build_ova() {
     OVA_FIXED="wazuh${OVA_VERSION}-fixed.ova"
     OVA_VMDK="wazuh${OVA_VERSION}-disk001.vmdk"
     ELK_MAJOR=`echo ${ELK_VERSION}|cut -d"." -f1`
-    export OVA_BRANCH="$BRANCH"
-
+    export BRANCH
 
     if [ -e "${OVA_VM}" ] || [ -e "${OVA_VM}" ]; then
         rm -f ${OVA_VM} ${OVF_VM}
@@ -107,8 +106,8 @@ build_ova() {
 check_version() {
     echo " https://packages-dev.wazuh.com/pre-release/ui/kibana/wazuhapp-${WAZUH_VERSION}_${ELK_VERSION}-1.zip"
     if [ "${STATUS}" = "prod" ]; then
-        major_version="$(echo ${WAZUH_VERSION} | head -c 1)"
-        curl -Isf https://packages.wazuh.com/${major_version}/ui/kibana/wazuhapp-${WAZUH_VERSION}_${ELK_VERSION}.zip > /dev/null || ( echo "Error version ${WAZUH_VERSION}-${ELK_VERSION} not supported." && exit 1 )
+        WAZUH_MAJOR="$(echo ${WAZUH_VERSION} | head -c 1)"
+        curl -Isf https://packages.wazuh.com/${WAZUH_MAJOR}/ui/kibana/wazuhapp-${WAZUH_VERSION}_${ELK_VERSION}.zip > /dev/null || ( echo "Error version ${WAZUH_VERSION}-${ELK_VERSION} not supported." && exit 1 )
     elif [ "${STATUS}" = "dev" ]; then
         curl -Isf https://packages-dev.wazuh.com/pre-release/ui/kibana/wazuh_kibana-${WAZUH_VERSION}_${ELK_VERSION}-1.zip > /dev/null || ( echo "Error version ${WAZUH_VERSION}-${ELK_VERSION} not supported." && exit 1 )
     else
@@ -128,8 +127,8 @@ main() {
 
         "-v" | "--version")
             if [ -n "$2" ]; then
-                export OVA_WAZUH_VERSION="$2"
-                WAZUH_VERSION="$2"
+
+                export WAZUH_VERSION="$2"
                 HAVE_VERSION=true
             else
                 echo "ERROR Need wazuh version."
@@ -140,8 +139,7 @@ main() {
         "-o" | "--opendistro")
             if [ -n "$2" ]; then
 
-                export OVA_OPENDISTRO_VERSION="$2"
-                OPENDISTRO_VERSION="$2"
+                export OPENDISTRO_VERSION="$2"
                 HAVE_OPENDISTRO_VERSION=true
             else
                 echo "ERROR Need opendistro version."
@@ -152,8 +150,8 @@ main() {
 
         "-f" | "--filebeat")
             if [ -n "$2" ]; then
-                export OVA_ELK_VERSION="$2"
-                ELK_VERSION="$2"
+
+                export ELK_VERSION="$2"
                 HAVE_ELK_VERSION=true
             else
                 echo "ERROR: Need filebeat version."
@@ -164,8 +162,8 @@ main() {
 
         "-r" | "--repository")
             if [ -n "$2" ]; then
-                export OVA_STATUS_PACKAGES="$2"
-                STATUS="$2"
+
+                export STATUS="$2"
                 HAVE_STATUS=true
             else
                 echo "ERROR: package repository is needed_."
@@ -175,11 +173,10 @@ main() {
         ;;
         "-b"|"--branch")
             if [ -n "$2" ]; then
-                export OVA_BRANCH="$2"
+            
                 BRANCH="$2"
                 shift 2
             else
-                export OVA_BRANCH="$BRANCH"
                 help 1
             fi
             ;;
