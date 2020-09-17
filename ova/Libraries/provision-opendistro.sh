@@ -15,15 +15,8 @@ startService() {
         systemctl daemon-reload 
         systemctl enable $1.service 
         systemctl start $1.service 
-<<<<<<< HEAD
-        if [ "$?" != 0 ]
-        then
-            echo "${1^} could not be started."
-            systemctl status elasticsearch -l
-=======
         if [ "$?" != 0 ]; then
             logger "${1^} could not be started."
->>>>>>> Use-opendistro-in-ova
             exit 1;
         else
             logger "${1^} started"
