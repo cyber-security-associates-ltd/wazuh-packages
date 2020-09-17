@@ -1,5 +1,5 @@
 #/bin/bash
-set -x
+set -exf
 # Variables
 repo_branch=$(echo "$1" | cut -c1-3)
 repo_baseurl=$(echo "$1" | cut -c1-2)
@@ -51,7 +51,8 @@ cleanInstall
 rm -rf /var/provision
 
 systemctl stop kibana
-systemctl filebeat kibana
+systemctl stop filebeat 
 systemctl stop  elasticsearch
 systemctl enable wazuh-manager
+systemctl is-enabled wazuh-manager
 systemctl stop wazuh-manager
