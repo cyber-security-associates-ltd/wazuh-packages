@@ -1,6 +1,6 @@
 Summary:     Wazuh helps you to gain security visibility into your infrastructure by monitoring hosts at an operating system and application level. It provides the following capabilities: log analysis, file integrity monitoring, intrusions detection and policy and compliance monitoring
 Name:        wazuh-manager
-Version:     4.0.0
+Version:     4.1.0
 Release:     %{_release}
 License:     GPL
 Group:       System Environment/Daemons
@@ -639,6 +639,7 @@ rm -fr %{buildroot}
 %dir %attr(750, ossec, ossec) %{_localstatedir}/queue/fts
 %dir %attr(770, ossecr, ossec) %{_localstatedir}/queue/rids
 %dir %attr(750, ossec, ossec) %{_localstatedir}/queue/rootcheck
+%dir %attr(770, ossec, ossec) %{_localstatedir}/queue/tasks
 %dir %attr(770, ossec, ossec) %{_localstatedir}/queue/ossec
 %dir %attr(660, root, ossec) %{_localstatedir}/queue/vulnerabilities
 %dir %attr(440, root, ossec) %{_localstatedir}/queue/vulnerabilities/dictionaries
