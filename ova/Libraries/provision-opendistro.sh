@@ -10,29 +10,24 @@ logger() {
 }
 
 startService() {
-
-    if [ -n "$(ps -e | egrep ^\ *1\ .*systemd$)" ]; then
+    service_name=$1
+    if command -v systemctl > /dev/null 2>&1 && systemctl > /dev/null 2>&1; then
         systemctl daemon-reload 
-        systemctl enable $1.service 
-        systemctl start $1.service 
+        systemctl enable ${service_name}.service 
+        systemctl start ${service_name}.service 
         if [ "$?" != 0 ]; then
             logger "${1^} could not be started."
             exit 1;
         else
             logger "${1^} started"
         fi
-    elif [ -n "$(ps -e | egrep ^\ *1\ .*init$)" ]; then
-        chkconfig $1 on 
-        service $1 start 
-        /etc/init.d/$1 start 
-        if [ "$?" != 0 ]; then
-            logger "${1^} could not be started."
-            exit 1;
-        else
-            logger "${1^} started"
+    elif command -v service > /dev/null 2>&1; then
+        if command -v chkconfig > /dev/null 2>&1; then
+            chkconfig ${service_name} on
+        elif command -v update-rc.d > /dev/null 2>&1; then
+            update-rc.d ${service_name} defaults
         fi
-    elif [ -x /etc/rc.d/init.d/$1 ] ; then
-        /etc/rc.d/init.d/$1 start 
+        service ${service_name} start 
         if [ "$?" != 0 ]; then
             logger "${1^} could not be started."
             exit 1;
@@ -77,16 +72,26 @@ installPrerequisites() {
 addWazuhrepo() {
     WAZUH_MAJOR="$(echo ${WAZUH_VERSION} | head -c 1)"
     logger "Adding the Wazuh repository..."
-    if [ "${STATUS_PACKAGES}" = "prod" ]; then
-      logger "Adding production repository..."
-       rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH 
-      echo -e "[wazuh_repo]\ngpgcheck=1\ngpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\nenabled=1\nname=EL-$releasever - Wazuh\nbaseurl=https://packages.wazuh.com/${WAZUH_MAJOR}.x/yum/\nprotect=1" | tee /etc/yum.repos.d/wazuh.repo 
-    elif [ "${STATUS_PACKAGES}" = "dev" ]; then
-      logger "Adding development repository..."
-       rpm --import https://packages-dev.wazuh.com/key/GPG-KEY-WAZUH 
-      echo -e '[wazuh_pre-release]\ngpgcheck=1\ngpgkey=https://packages-dev.wazuh.com/key/GPG-KEY-WAZUH\nenabled=1\nname=EL-$releasever - Wazuh\nbaseurl=https://packages-dev.wazuh.com/pre-release/yum/\nprotect=1' | tee /etc/yum.repos.d/wazuh.repo 
-    fi
+    rpm --import https://packages.wazuh.com/key/GPG-KEY-WAZUH 
 
+    if [ "${STATUS_PACKAGES}" = "prod" ]; then
+        logger "Adding production repository..."
+        echo -e "[wazuh_repo]\ngpgcheck=1\ngpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH\nenabled=1\nname=EL-$releasever - Wazuh\nbaseurl=https://packages.wazuh.com/${WAZUH_MAJOR}.x/yum/\nprotect=1" | tee /etc/yum.repos.d/wazuh.repo 
+    elif [ "${STATUS_PACKAGES}" = "dev" ]; then
+        logger "Adding development repository..."
+        echo -e '[wazuh_pre-release]\ngpgcheck=1\ngpgkey=https://packages-dev.wazuh.com/key/GPG-KEY-WAZUH\nenabled=1\nname=EL-$releasever - Wazuh\nbaseurl=https://packages-dev.wazuh.com/pre-release/yum/\nprotect=1' | tee /etc/yum.repos.d/wazuh.repo 
+    fi
+    if [ "$?" != 0 ]; then
+        logger "Error: Wazuh repository could not be added"
+        exit 1;
+    else
+        logger "Done"
+    fi
+}
+
+addElasticRepo(){
+    logger "Adding the Elastic repository..."
+    curl https://d3g5vo6xdbdb9a.cloudfront.net/yum/opendistroforelasticsearch-artifacts.repo -o /etc/yum.repos.d/opendistroforelasticsearch-artifacts.repo
     if [ "$?" != 0 ]; then
         logger "Error: Wazuh repository could not be added"
         exit 1;
@@ -104,6 +109,8 @@ addElasticRepo(){
         logger "Done"
     fi
 }
+
+
 
 ## Wazuh manager
 installWazuh() {
@@ -198,9 +205,7 @@ installFilebeat() {
         
         curl -s https://packages.wazuh.com/3.x/filebeat/wazuh-filebeat-0.1.tar.gz --max-time 300 | tar -xvz -C /usr/share/filebeat/module 
         mkdir -p /etc/filebeat/certs 
-        cp /etc/elasticsearch/certs/root-ca.pem /etc/filebeat/certs/ 
-        mv /etc/elasticsearch/certs/filebeat.key /etc/filebeat/certs/ 
-        mv /etc/elasticsearch/certs/filebeat.pem /etc/filebeat/certs/ 
+        cp /etc/elasticsearch/certs/{root-ca.pem,filebeat.key,filebeat.pem} /etc/filebeat/certs/ 
         # Start Filebeat
         startService "filebeat"
         logger "Done"
@@ -218,7 +223,6 @@ installKibana() {
     else
         curl -so /etc/kibana/kibana.yml ${resources_url}/resources/open-distro/kibana/7.x/kibana_all_in_one.yml --max-time 300 
         echo "telemetry.enabled: false" >> /etc/kibana/kibana.yml
-        cd /usr/share/kibana 
 
         if [ "${STATUS_PACKAGES}" = "prod" ]; then
             sudo -u kibana /usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/${WAZUH_MAJOR}.x/ui/kibana/wazuh_kibana-${WAZUH_VERSION}_${ELK_VERSION}.zip 
@@ -232,8 +236,7 @@ installKibana() {
             exit 1;
         fi
         mkdir -p /etc/kibana/certs 
-        mv /etc/elasticsearch/certs/kibana.key /etc/kibana/certs/ 
-        mv /etc/elasticsearch/certs/kibana.pem /etc/kibana/certs/ 
+        mv /etc/elasticsearch/certs/{kibana.key,kibana.pem} /etc/kibana/certs/ 
         setcap 'cap_net_bind_service=+ep' /usr/share/kibana/node/bin/node 
 
         # Start Kibana
@@ -284,6 +287,7 @@ checkInstallation() {
 
 cleanInstall(){
     rm -rf /etc/yum.repos.d/adoptopenjdk.repo
-    rm -rf  /etc/yum.repos.d/wazuh.repo
+    rm -rf /etc/yum.repos.d/wazuh.repo
+    rm -rf /etc/yum.repos.d/opendistroforelasticsearch-artifacts.repo
     yum clean all
 }
